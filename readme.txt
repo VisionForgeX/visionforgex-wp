@@ -38,7 +38,7 @@ This plugin connects your site to **VisionForgeX** (https://visionforgex.com), t
 
 No posts, users, visitors or personal data are sent by the plugin. Your visitors' browsers talk to VisionForgeX and Google when the ads load, as with any ad tag.
 
-VisionForgeX: [Terms](https://visionforgex.com/terms) · [Privacy](https://visionforgex.com/terms#visitors). Google: [Terms](https://policies.google.com/terms) · [Privacy policy](https://policies.google.com/privacy).
+VisionForgeX: [Terms](https://visionforgex.com/terms) · [Privacy policy](https://visionforgex.com/privacy/). Google: [Terms](https://policies.google.com/terms) · [Privacy policy](https://policies.google.com/privacy).
 
 == Installation ==
 
