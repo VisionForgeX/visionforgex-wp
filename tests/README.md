@@ -19,7 +19,21 @@ A real WordPress, the real plugin, the platform's test server and a browser.
    390 px phone; Disconnect (the platform lets go, our block out of their file); a stale link and Cancel; uninstall.
    Screenshots in `tests/shots/`. It puts the platform's files back when it ends.
 
-Passed on WordPress 7.1.4, 6.8.3 and 6.3 with PHP 8.3 (14 Nov 2026). Not proven here: PHP 7.4 (not installed; the
+6. `node tests/e2e2.js` (after a fresh `setup.sh`) — 58 checks, phase 2: Formats changed on VisionForgeX through the
+   plugin (the save bar, the preview with sizes, the anchor, sticky and the rewarded prompt; the platform's file changed
+   only where asked; logged by name; refresh under 30 s, a format without its ad unit and a size not on the list refused;
+   settings it does not offer ignored); Ad Tags (made, listed with the shortcode, removed); the shortcode, block and
+   widget printing the spot (nothing for a removed or unknown Ad Tag); the block in the editor with the Ad Tags; the
+   per-post box; Where ads show (off by default; category, address, logged in; "No ads on this page" with the rules off);
+   Site tools with **real Autoptimize and LiteSpeed Cache** (cloned from GitHub into `PLUGINS`, default
+   `/tmp/claude-0/wpplugins`): our scripts untouched while Autoptimize combines and LiteSpeed delays the site's own, the
+   site check green, the switch and its undo; other ad code (an AdSense script in the page; stand-ins named as such for
+   Ad Inserter and Site Kit): deactivate after a confirmation and Undo, Site Kit's AdSense setting off and back; 390 px on
+   the four new screens; no JavaScript error or PHP notice.
+
+Phase 1 passed on WordPress 7.1.4, 6.8.3 and 6.3; phase 1 and 2 again on 7.1.4 and 6.3, with PHP 8.3 (14 Nov 2026).
+Not proven here: WP Rocket, Perfmatters and SiteGround Optimizer running (WP Rocket's source needs Composer packages
+this workspace cannot fetch; the other two are not public), the real Ad Inserter, Site Kit and membership plugins. Not proven here: PHP 7.4 (not installed; the
 code uses nothing newer and the coding-standards check is set to 7.4+), real hosts and caching plugins, HTTPS sites,
 the "your site is live" moment (needs HTTPS), and WordPress.org's own Plugin Check (not reachable from the workspace;
 `phpcs` with the WordPress standard is clean instead).

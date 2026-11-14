@@ -13,7 +13,7 @@ if ( ! defined( 'VISIONFORGEX_PLATFORM' ) ) {
 	define( 'VISIONFORGEX_PLATFORM', 'https://visionforgex.com' );
 }
 if ( ! defined( 'VISIONFORGEX_VERSION' ) ) {
-	define( 'VISIONFORGEX_VERSION', '1.0.0' );
+	define( 'VISIONFORGEX_VERSION', '1.1.0' );
 }
 require_once __DIR__ . '/includes/class-visionforgex-store.php';
 require_once __DIR__ . '/includes/class-visionforgex-api.php';
@@ -26,5 +26,6 @@ VisionForgeX_Adstxt::remove_from_file();
 foreach ( VisionForgeX_Store::all_options() as $visionforgex_option ) {
 	delete_option( $visionforgex_option );
 }
+delete_post_meta_by_key( '_visionforgex_ads' );
 wp_clear_scheduled_hook( 'visionforgex_sync' );
 wp_clear_scheduled_hook( 'visionforgex_daily' );

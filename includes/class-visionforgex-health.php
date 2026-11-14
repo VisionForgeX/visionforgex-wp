@@ -146,31 +146,29 @@ class VisionForgeX_Health {
 
 		// The tag on the home page.
 		$serving = $snap && ! empty( $snap['site']['approved'] ) && ! empty( $snap['site']['enabled'] );
+		$page    = self::fetch( home_url( '/' ) ); // Once: for the tag, and for other ad code in the page.
 		if ( $set['paused'] ) {
 			$add( 'tag', 'info', __( 'Ads are paused from WordPress, so the tag is off on purpose.', 'visionforgex' ) );
 		} elseif ( ! $serving ) {
 			$add( 'tag', 'info', __( 'The tag goes on your pages by itself once VisionForgeX has approved the site.', 'visionforgex' ) );
-		} else {
-			$page = self::fetch( home_url( '/' ) );
-			if ( ! $page['ok'] ) {
+		} elseif ( ! $page['ok'] ) {
 				/* translators: %s: an error or an HTTP status */
 				$add( 'tag', 'info', sprintf( __( 'The plugin could not load your home page from your own server (%s), so it could not look for the tag. Many hosts block this; it does not mean visitors cannot see your site.', 'visionforgex' ), $page['error'] ? $page['error'] : 'HTTP ' . $page['status'] ) );
-			} else {
-				$t = self::tag_state( $page['body'] );
-				if ( 'missing' === $t ) {
-					$fresh = self::fetch( add_query_arg( 'vfx_check', wp_rand( 100000, 999999 ), home_url( '/' ) ) );
-					$t2    = $fresh['ok'] ? self::tag_state( $fresh['body'] ) : 'missing';
-					if ( 'ok' === $t2 ) {
-						$add( 'tag', 'warn', __( 'The tag is on your pages, but a page cache is still serving an older copy of the home page. Clear your cache.', 'visionforgex' ) );
-					} else {
-						$add( 'tag', 'bad', __( 'The tag is not on your home page. Your theme may not call wp_head(), or another plugin removes scripts.', 'visionforgex' ) );
-					}
-				} elseif ( 'ok' === $t ) {
-					$add( 'tag', 'ok', __( 'The tag is on your pages and loads straight away.', 'visionforgex' ) );
+		} else {
+			$t = self::tag_state( $page['body'] );
+			if ( 'missing' === $t ) {
+				$fresh = self::fetch( add_query_arg( 'vfx_check', wp_rand( 100000, 999999 ), home_url( '/' ) ) );
+				$t2    = $fresh['ok'] ? self::tag_state( $fresh['body'] ) : 'missing';
+				if ( 'ok' === $t2 ) {
+					$add( 'tag', 'warn', __( 'The tag is on your pages, but a page cache is still serving an older copy of the home page. Clear your cache.', 'visionforgex' ) );
 				} else {
-					/* translators: %s: the plugin that delays scripts */
-					$add( 'tag', 'bad', sprintf( __( '%s is delaying the tag, which loses most of the ads. Exclude it from delaying in that plugin\'s settings.', 'visionforgex' ), $t ) );
+					$add( 'tag', 'bad', __( 'The tag is not on your home page. Your theme may not call wp_head(), or another plugin removes scripts.', 'visionforgex' ) );
 				}
+			} elseif ( 'ok' === $t ) {
+				$add( 'tag', 'ok', __( 'The tag is on your pages and loads straight away.', 'visionforgex' ) );
+			} else {
+				/* translators: %s: the plugin that delays scripts */
+				$add( 'tag', 'bad', sprintf( __( '%s is delaying the tag, which loses most of the ads. Exclude it from delaying in that plugin\'s settings.', 'visionforgex' ), $t ) );
 			}
 		}
 
@@ -210,6 +208,7 @@ class VisionForgeX_Health {
 			'at'       => gmdate( 'c' ),
 			'checks'   => $checks,
 			'platform' => null,
+			'found'    => $page['ok'] ? VisionForgeX_Tools::scan_html( $page['body'] ) : array(),
 		);
 		if ( $report && VisionForgeX_Store::connected() && '' === $stage ) {
 			$r = VisionForgeX_Api::call(

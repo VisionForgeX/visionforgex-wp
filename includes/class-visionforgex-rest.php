@@ -27,13 +27,21 @@ class VisionForgeX_Rest {
 	/** The routes. */
 	public static function routes() {
 		$r = array(
-			'state'      => array( 'GET', 'state' ),
-			'connect'    => array( 'POST', 'connect' ),
-			'sync'       => array( 'POST', 'sync' ),
-			'health'     => array( 'POST', 'health' ),
-			'pause'      => array( 'POST', 'pause' ),
-			'adstxt'     => array( 'POST', 'adstxt' ),
-			'disconnect' => array( 'POST', 'disconnect' ),
+			'state'       => array( 'GET', 'state' ),
+			'connect'     => array( 'POST', 'connect' ),
+			'sync'        => array( 'POST', 'sync' ),
+			'health'      => array( 'POST', 'health' ),
+			'pause'       => array( 'POST', 'pause' ),
+			'adstxt'      => array( 'POST', 'adstxt' ),
+			'disconnect'  => array( 'POST', 'disconnect' ),
+			'settings'    => array( 'POST', 'settings' ),
+			'adtag'       => array( 'POST', 'adtag' ),
+			'adtag-del'   => array( 'POST', 'adtag_delete' ),
+			'rules'       => array( 'POST', 'rules' ),
+			'speed'       => array( 'POST', 'speed' ),
+			'speed-clear' => array( 'POST', 'speed_clear' ),
+			'other-off'   => array( 'POST', 'other_off' ),
+			'other-undo'  => array( 'POST', 'other_undo' ),
 		);
 		foreach ( $r as $path => $def ) {
 			register_rest_route(
@@ -120,6 +128,10 @@ class VisionForgeX_Rest {
 			'health'     => VisionForgeX_Health::last(),
 			'history'    => array_slice( VisionForgeX_Store::history(), 0, 20 ),
 			'error'      => false !== $err ? (string) $err : '',
+			'ads'        => $snap && isset( $snap['settings'] ) && is_array( $snap['settings'] ) ? $snap['settings'] : null,
+			'where'      => VisionForgeX_Rules::for_app(),
+			'speed'      => VisionForgeX_Tools::speed(),
+			'others'     => VisionForgeX_Tools::others(),
 		);
 	}
 
@@ -221,5 +233,150 @@ class VisionForgeX_Rest {
 	public static function disconnect() {
 		$told = VisionForgeX_Connect::disconnect();
 		return self::ok( array( 'told' => $told ) );
+	}
+
+	/**
+	 * A signed call that changes something on VisionForgeX, then the new copy of the site.
+	 *
+	 * @param string $op   settings, adtag or adtag-delete.
+	 * @param array  $body What to send.
+	 * @return WP_REST_Response|WP_Error
+	 */
+	private static function platform_change( $op, array $body ) {
+		if ( ! VisionForgeX_Store::connected() ) {
+			return self::fail( __( 'Connect the site first.', 'visionforgex' ) );
+		}
+		$u          = wp_get_current_user();
+		$body['by'] = $u->display_name;
+		$r          = VisionForgeX_Api::call( 'POST', $op, $body );
+		if ( ! $r['ok'] ) {
+			return self::fail( (string) $r['message'], 422 === $r['status'] || 404 === $r['status'] ? 400 : 502 );
+		}
+		if ( ! empty( $r['data']['snapshot'] ) && is_array( $r['data']['snapshot'] ) ) {
+			VisionForgeX_Api::take_snapshot( $r['data']['snapshot'] );
+		}
+		return self::ok( array( 'changed' => isset( $r['data']['changed'] ) ? $r['data']['changed'] : array() ) );
+	}
+
+	/**
+	 * POST settings {changes}: ad settings on VisionForgeX (the platform decides what may change).
+	 *
+	 * @param WP_REST_Request $req Request.
+	 */
+	public static function settings( $req ) {
+		$changes = $req->get_param( 'changes' );
+		$r       = self::platform_change( 'settings', array( 'changes' => is_array( $changes ) ? $changes : array() ) );
+		if ( ! is_wp_error( $r ) ) {
+			$d = $r->get_data();
+			if ( ! empty( $d['changed'] ) ) {
+				/* translators: %s: what changed, in plain words */
+				VisionForgeX_Store::log( sprintf( __( 'Ad settings: %s', 'visionforgex' ), implode( ', ', (array) $d['changed'] ) ) );
+				$r = self::ok( array( 'changed' => $d['changed'] ) );
+			}
+		}
+		return $r;
+	}
+
+	/**
+	 * POST adtag {name, format, sizes}.
+	 *
+	 * @param WP_REST_Request $req Request.
+	 */
+	public static function adtag( $req ) {
+		$r = self::platform_change(
+			'adtag',
+			array(
+				'name'   => sanitize_text_field( (string) $req->get_param( 'name' ) ),
+				'format' => 'native' === $req->get_param( 'format' ) ? 'native' : 'banner',
+				'sizes'  => array_map( 'sanitize_text_field', (array) $req->get_param( 'sizes' ) ),
+			)
+		);
+		if ( ! is_wp_error( $r ) ) {
+			/* translators: %s: an Ad Tag's name */
+			VisionForgeX_Store::log( sprintf( __( 'Ad Tag added: %s', 'visionforgex' ), sanitize_text_field( (string) $req->get_param( 'name' ) ) ) );
+			$r = self::ok();
+		}
+		return $r;
+	}
+
+	/**
+	 * POST adtag-del {id}.
+	 *
+	 * @param WP_REST_Request $req Request.
+	 */
+	public static function adtag_delete( $req ) {
+		$id = sanitize_text_field( (string) $req->get_param( 'id' ) );
+		$r  = self::platform_change( 'adtag-delete', array( 'id' => $id ) );
+		if ( ! is_wp_error( $r ) ) {
+			/* translators: %s: an Ad Tag's id */
+			VisionForgeX_Store::log( sprintf( __( 'Ad Tag removed: %s', 'visionforgex' ), $id ) );
+			$r = self::ok();
+		}
+		return $r;
+	}
+
+	/**
+	 * POST rules {rules}: where ads show (kept in WordPress).
+	 *
+	 * @param WP_REST_Request $req Request.
+	 */
+	public static function rules( $req ) {
+		$in = $req->get_param( 'rules' );
+		VisionForgeX_Rules::save( is_array( $in ) ? $in : array() );
+		VisionForgeX_Store::log( VisionForgeX_Rules::get()['on'] ? __( 'Where ads show: rules saved (on)', 'visionforgex' ) : __( 'Where ads show: rules off', 'visionforgex' ) );
+		VisionForgeX_Health::clear_caches();
+		return self::ok();
+	}
+
+	/**
+	 * POST speed {key, on}: keep the tag out of a speed plugin's lists, or stop (the undo).
+	 *
+	 * @param WP_REST_Request $req Request.
+	 */
+	public static function speed( $req ) {
+		$key = sanitize_key( (string) $req->get_param( 'key' ) );
+		$ok  = false;
+		foreach ( VisionForgeX_Tools::speed_catalog() as $info ) {
+			$ok = $ok || $info[0] === $key;
+		}
+		if ( ! $ok ) {
+			return self::fail( __( 'Unknown plugin.', 'visionforgex' ) );
+		}
+		$on = rest_sanitize_boolean( $req->get_param( 'on' ) );
+		VisionForgeX_Tools::set_excluded( $key, $on );
+		/* translators: %s: a plugin key */
+		VisionForgeX_Store::log( sprintf( $on ? __( 'Tag kept out of %s again', 'visionforgex' ) : __( 'Tag no longer kept out of %s', 'visionforgex' ), $key ) );
+		VisionForgeX_Tools::clear( $key );
+		return self::ok();
+	}
+
+	/**
+	 * POST speed-clear {key}.
+	 *
+	 * @param WP_REST_Request $req Request.
+	 */
+	public static function speed_clear( $req ) {
+		$ok = VisionForgeX_Tools::clear( sanitize_key( (string) $req->get_param( 'key' ) ) );
+		return $ok ? self::ok() : self::fail( __( 'That plugin\'s cache could not be cleared from here.', 'visionforgex' ) );
+	}
+
+	/**
+	 * POST other-off {key}.
+	 *
+	 * @param WP_REST_Request $req Request.
+	 */
+	public static function other_off( $req ) {
+		$r = VisionForgeX_Tools::switch_off( sanitize_key( (string) $req->get_param( 'key' ) ) );
+		return $r['ok'] ? self::ok( array( 'message' => $r['message'] ) ) : self::fail( $r['message'] );
+	}
+
+	/**
+	 * POST other-undo {key}.
+	 *
+	 * @param WP_REST_Request $req Request.
+	 */
+	public static function other_undo( $req ) {
+		$r = VisionForgeX_Tools::undo( sanitize_key( (string) $req->get_param( 'key' ) ) );
+		return $r['ok'] ? self::ok( array( 'message' => $r['message'] ) ) : self::fail( $r['message'] );
 	}
 }

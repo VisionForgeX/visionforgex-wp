@@ -2,8 +2,8 @@
 /**
  * Plugin Name:       VisionForgeX – Ad Management & Yield
  * Plugin URI:        https://visionforgex.com/
- * Description:       Connects your site to VisionForgeX in one click: your ad tag and ads.txt lines go on the site by themselves, speed plugins are kept off the tag, and your ads are managed from WordPress.
- * Version:           1.0.0
+ * Description:       Connects your site to VisionForgeX in one click: your ad tag and ads.txt lines go on the site by themselves, speed plugins are kept off the tag, and your ad formats, Ad Tags and where ads show are managed from WordPress.
+ * Version:           1.1.0
  * Requires at least: 6.3
  * Requires PHP:      7.4
  * Author:            VisionForgeX
@@ -18,7 +18,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'VISIONFORGEX_VERSION', '1.0.0' );
+define( 'VISIONFORGEX_VERSION', '1.1.0' );
 define( 'VISIONFORGEX_FILE', __FILE__ );
 define( 'VISIONFORGEX_DIR', plugin_dir_path( __FILE__ ) );
 define( 'VISIONFORGEX_URL', plugin_dir_url( __FILE__ ) );
@@ -35,6 +35,10 @@ require_once VISIONFORGEX_DIR . 'includes/class-visionforgex-adstxt.php';
 require_once VISIONFORGEX_DIR . 'includes/class-visionforgex-health.php';
 require_once VISIONFORGEX_DIR . 'includes/class-visionforgex-rest.php';
 require_once VISIONFORGEX_DIR . 'includes/class-visionforgex-admin.php';
+require_once VISIONFORGEX_DIR . 'includes/class-visionforgex-rules.php';
+require_once VISIONFORGEX_DIR . 'includes/class-visionforgex-placements.php';
+require_once VISIONFORGEX_DIR . 'includes/class-visionforgex-widget.php';
+require_once VISIONFORGEX_DIR . 'includes/class-visionforgex-tools.php';
 
 VisionForgeX_Frontend::init();
 VisionForgeX_Adstxt::init();
@@ -42,6 +46,9 @@ VisionForgeX_Rest::init();
 VisionForgeX_Admin::init();
 VisionForgeX_Connect::init();
 VisionForgeX_Health::init();
+VisionForgeX_Rules::init();
+VisionForgeX_Placements::init();
+VisionForgeX_Tools::init();
 
 register_activation_hook( __FILE__, array( 'VisionForgeX_Store', 'activate' ) );
 register_deactivation_hook( __FILE__, array( 'VisionForgeX_Store', 'deactivate' ) );

@@ -4,7 +4,7 @@ Tags: ads, ad manager, ads.txt, header bidding, adsense alternative
 Requires at least: 6.3
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.0.0
+Stable tag: 1.1.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -18,6 +18,10 @@ VisionForgeX runs ads for publishers through Google Ad Exchange, Prebid and its 
 * **Speed plugins handled.** The tag carries the attributes WP Rocket, LiteSpeed Cache, Autoptimize, Perfmatters, SiteGround Optimizer and Cloudflare honour, so it is never delayed or combined.
 * **ads.txt kept right.** Every line VisionForgeX needs is added next to your own lines, never removing anyone else's. With no ads.txt file on your server, WordPress answers /ads.txt itself; with a real file, the plugin keeps its lines in a marked block at the end.
 * **Go live checklist.** The plugin loads your home page and ads.txt the way a visitor does and tells you what it found: the tag there and not delayed, ads.txt complete, HTTPS. VisionForgeX checks your ads.txt at the same moment, so your account turns green in seconds.
+* **Your ad formats from WordPress.** Banner, native, anchor, interstitial and rewarded ads, refresh, how ads are placed and how many, with a live preview of a page on a phone and a desktop. Changes go live on your site at once.
+* **Ad Tags, a block, a shortcode and a widget.** Put a named ad spot exactly where you want it: the "VisionForgeX ad" block in the editor, `[visionforgex tag="…"]` anywhere shortcodes work, or the widget in a sidebar.
+* **Where ads show.** No ads on chosen post types, categories or addresses; none for logged-in visitors, chosen roles or paying members (MemberPress, Paid Memberships Pro, Restrict Content Pro, WooCommerce Memberships); never on WooCommerce's cart, checkout and account pages; and a "No ads on this page" box on every post.
+* **Site tools.** The speed and cache plugins on your site, kept off the tag, with a button to clear each one's cache; other ad code that would fight with VisionForgeX (AdSense, Ezoic, Mediavine, Raptive, Ad Inserter and more) found, with a one-click switch-off and undo.
 * **Pause all ads** in one click, for emergencies. It works even when VisionForgeX cannot be reached.
 * **Safe by design.** Nothing is fetched while visitors load your pages: the plugin prints your tag from a copy kept in WordPress. A staging or local copy of your site stays quiet. Uninstalling puts everything back.
 
@@ -31,6 +35,7 @@ The readable source of the dashboard (React, built with esbuild) is in the plugi
 
 This plugin connects your site to **VisionForgeX** (https://visionforgex.com), the ad service it is made for. Nothing is sent before you click **Connect with VisionForgeX**.
 
+* **When you change a format or an Ad Tag** in the plugin, the change (and your WordPress display name, for the history) is sent to VisionForgeX, which saves it for your site.
 * **When you click Connect**, your browser goes to visionforgex.com with this site's address and name, and the WordPress, PHP and plugin versions. After you sign in and allow the site, the plugin receives a key for this site only.
 * **Twice a day**, the plugin asks VisionForgeX for this site's tag and ads.txt lines.
 * **Once a day and when you run the check**, the plugin sends the result of its site check (tag found, ads.txt complete, HTTPS) and the WordPress, PHP and plugin versions. VisionForgeX then loads your site's /ads.txt to check it.
@@ -68,6 +73,14 @@ The plugin recognises staging and local copies (and WordPress's environment type
 
 It tells VisionForgeX the site let go of its key, takes the plugin's lines out of a real ads.txt file (everyone else's stay), and removes every setting and scheduled job the plugin kept.
 
+= Can I put an ad in a specific place? =
+
+Yes. Add an Ad Tag in VisionForgeX → Ad Tags, then use the "VisionForgeX ad" block, the shortcode it shows you, or the VisionForgeX ad widget.
+
+= Will it switch off my other ad plugins by itself? =
+
+No. Site tools lists them, and only switches one off when you click, with an undo.
+
 = Where are my earnings? =
 
 On your VisionForgeX dashboard. The plugin's Home screen has an "Open your reports" button.
@@ -78,9 +91,19 @@ On your VisionForgeX dashboard. The plugin's Home screen has an "Open your repor
 2. Home: status, Pause all ads, and the site at a glance.
 3. Go live: the checklist the plugin runs itself.
 4. ads.txt: VisionForgeX's lines next to yours.
-5. Dark mode, and on a phone.
+5. Formats, with the live preview.
+6. Ad Tags, the block and the shortcode.
+7. Where ads show.
+8. Site tools: speed plugins and other ad code.
+9. Dark mode, and on a phone.
 
 == Changelog ==
+
+= 1.1.0 =
+* Formats from WordPress with a live preview (banner, native, anchor, interstitial, rewarded, refresh, placement).
+* Ad Tags, the "VisionForgeX ad" block, the [visionforgex] shortcode and the widget.
+* Where ads show: content, visitors, paying members, WooCommerce, and "No ads on this page" on each post.
+* Site tools: speed and cache plugins kept off the tag (with undo and cache clearing); other ad code found, with one-click switch-off and undo.
 
 = 1.0.0 =
 * First release: Connect with VisionForgeX (sign-in or sign-up, no keys to copy), the tag on every page kept off speed plugins, ads.txt served or merged, the Go live checklist and daily site check, Pause all ads, light and dark dashboard, clean uninstall.

@@ -4,6 +4,7 @@
  */
 import { Mark, Icon, Light, Toasts } from './ui.jsx';
 import { Welcome, Home, GoLive, AdsTxt, Settings, siteStatus } from './views.jsx';
+import { Formats, AdTags, Where, Tools } from './views2.jsx';
 
 const { useState, useEffect, useCallback, render, createRoot } = wp.element;
 import { __ } from './i18n.js';
@@ -13,6 +14,10 @@ const boot = window.visionforgexBoot || {};
 const TABS = [
 	['home', 'home', __('Home', 'visionforgex')],
 	['golive', 'rocket', __('Go live', 'visionforgex')],
+	['formats', 'layers', __('Formats', 'visionforgex')],
+	['adtags', 'tag', __('Ad Tags', 'visionforgex')],
+	['where', 'filter', __('Where ads show', 'visionforgex')],
+	['tools', 'wrench', __('Site tools', 'visionforgex')],
 	['adstxt', 'file', 'ads.txt'],
 	['settings', 'gear', __('Settings', 'visionforgex')],
 ];
@@ -66,6 +71,16 @@ function App() {
 		}
 	}, []);
 
+	// A link to another section of the dashboard (…#adtags) opens it without reloading.
+	useEffect(() => {
+		const on = () => {
+			const h = (window.location.hash || '').replace('#', '');
+			if (TABS.some((t) => t[0] === h)) setTab(h);
+		};
+		window.addEventListener('hashchange', on);
+		return () => window.removeEventListener('hashchange', on);
+	}, []);
+
 	const go = (t) => {
 		setTab(t);
 		if (window.history && window.history.replaceState) window.history.replaceState(null, '', '#' + t);
@@ -78,6 +93,11 @@ function App() {
 		health: __('Site check finished.', 'visionforgex'),
 		adstxt: __('ads.txt saved.', 'visionforgex'),
 		disconnect: __('Disconnected. The tag is off your pages.', 'visionforgex'),
+		adtag: __('Ad Tag added. Its shortcode is ready to copy.', 'visionforgex'),
+		'adtag-del': __('Ad Tag removed.', 'visionforgex'),
+		rules: __('Where ads show: saved. It applies from the next page view.', 'visionforgex'),
+		speed: __('Saved, and that plugin\u2019s cache cleared.', 'visionforgex'),
+		'speed-clear': __('Cache cleared.', 'visionforgex'),
 	};
 
 	function act(name, data, quiet) {
@@ -91,6 +111,8 @@ function App() {
 				if (r.state) setS(r.state);
 				if (name === 'pause') toast(data && data.paused ? __('All ads paused. The tag is off every page.', 'visionforgex') : __('Ads are back on.', 'visionforgex'));
 				else if (name === 'adstxt' && r.result && !r.result.ok && r.result.message) toast(r.result.message, 'bad');
+				else if (name === 'settings') toast(r.changed && r.changed.length ? __('Saved and published to your site.', 'visionforgex') : __('Nothing changed.', 'visionforgex'));
+				else if ((name === 'other-off' || name === 'other-undo') && r.message) toast(r.message);
 				else if (DONE[name] && !quiet) toast(DONE[name]);
 				if (name === 'disconnect') setTab('home');
 				return r;
@@ -114,7 +136,7 @@ function App() {
 	}
 
 	const [state, title] = siteStatus(s);
-	const View = { home: Home, golive: GoLive, adstxt: AdsTxt, settings: Settings }[tab] || Home;
+	const View = { home: Home, golive: GoLive, formats: Formats, adtags: AdTags, where: Where, tools: Tools, adstxt: AdsTxt, settings: Settings }[tab] || Home;
 	return (
 		<>
 			<header className="vfx-top">

@@ -27,7 +27,7 @@ class VisionForgeX_Store {
 	 * @return string[]
 	 */
 	public static function all_options() {
-		return array( self::CONNECTION, self::SNAPSHOT, self::SETTINGS, self::HEALTH, self::HISTORY, 'visionforgex_adstxt_written' );
+		return array( self::CONNECTION, self::SNAPSHOT, self::SETTINGS, self::HEALTH, self::HISTORY, 'visionforgex_adstxt_written', 'visionforgex_rules', 'visionforgex_speed', 'visionforgex_finder' );
 	}
 
 	/** Plugin activated: the background jobs. Nothing is sent anywhere until the publisher clicks Connect. */

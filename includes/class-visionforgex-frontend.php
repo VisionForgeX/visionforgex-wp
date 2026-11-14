@@ -21,12 +21,24 @@ class VisionForgeX_Frontend {
 		add_filter( 'script_loader_tag', array( __CLASS__, 'script_tag' ), 20, 3 );
 		add_action( 'wp_head', array( __CLASS__, 'preconnect' ), 1 );
 
-		// The best-known speed plugins: keep the tag out of delaying, deferring and combining. The attributes on the
-		// script cover the rest; phase 2 adds the full fixer with undo.
-		foreach ( array( 'rocket_delay_js_exclusions', 'rocket_exclude_js', 'rocket_exclude_defer_js', 'rocket_minify_excluded_external_js', 'litespeed_optimize_js_excludes', 'litespeed_optm_js_defer_exc', 'litespeed_optm_gm_js_exc', 'perfmatters_delay_js_exclusions', 'sgo_javascript_combine_exclude', 'sgo_js_async_exclude', 'sgo_js_minify_exclude' ) as $f ) {
-			add_filter( $f, array( __CLASS__, 'exclude_list' ) );
+		// The best-known speed plugins: keep the tag out of delaying, deferring and combining through each plugin's own
+		// filters (the attributes on the script cover the rest). Each can be switched off in Site tools (the undo).
+		foreach ( VisionForgeX_Tools::speed_filters() as $key => $filters ) {
+			foreach ( $filters as $f ) {
+				add_filter(
+					$f,
+					function ( $items ) use ( $key ) {
+						return VisionForgeX_Tools::excluded( $key ) ? self::exclude_list( $items ) : $items;
+					}
+				);
+			}
 		}
-		add_filter( 'autoptimize_filter_js_exclude', array( __CLASS__, 'exclude_string' ) );
+		add_filter(
+			'autoptimize_filter_js_exclude',
+			function ( $items ) {
+				return VisionForgeX_Tools::excluded( 'autoptimize' ) ? self::exclude_string( $items ) : $items;
+			}
+		);
 	}
 
 	/**
@@ -35,6 +47,10 @@ class VisionForgeX_Frontend {
 	 * @return bool
 	 */
 	public static function should_serve() {
+		static $done = null;
+		if ( null !== $done && did_action( 'wp' ) ) {
+			return $done;
+		}
 		$snap = VisionForgeX_Store::snapshot();
 		$ok   = VisionForgeX_Store::connected() && $snap && ! empty( $snap['tag']['scripts'] )
 			&& ! empty( $snap['site']['approved'] ) && ! empty( $snap['site']['enabled'] )
@@ -48,7 +64,11 @@ class VisionForgeX_Frontend {
 		 *
 		 * @param bool $ok Whether the VisionForgeX tag is printed on this page.
 		 */
-		return (bool) apply_filters( 'visionforgex_should_serve', $ok );
+		$ok = (bool) apply_filters( 'visionforgex_should_serve', $ok );
+		if ( did_action( 'wp' ) ) {
+			$done = $ok; // Decided once per page, after WordPress knows what the page is.
+		}
+		return $ok;
 	}
 
 	/** @return array The tag's scripts: [['src', 'site', 'crossorigin']]. */
