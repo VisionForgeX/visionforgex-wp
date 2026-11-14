@@ -370,7 +370,7 @@ export function AdTags({ s, act, busy }) {
 			if (r && r.state) setName('');
 		});
 	return (
-		<div className="vfx-grid">
+		<div className="vfx-grid" data-vfx-adtags>
 			<Card title={__('Ad Tags', 'visionforgex')} icon="tag" className="vfx-span">
 				<p className="vfx-muted">{__('Named ad spots you place yourself, each with its own sizes. Put one in a post with the VisionForgeX ad block or its shortcode, or in a sidebar with the VisionForgeX ad widget (Appearance → Widgets). They are the same Ad Tags as on your VisionForgeX dashboard.', 'visionforgex')}</p>
 				{a.adTags.length ? (
@@ -461,7 +461,7 @@ export function AdTags({ s, act, busy }) {
 
 /* ------------------------------------------------------------------ Where ads show */
 
-function Picks({ items, value, onChange, label }) {
+export function Picks({ items, value, onChange, label }) {
 	return (
 		<div className="vfx-chips" role="group" aria-label={label}>
 			{items.map((it) => {
@@ -503,6 +503,20 @@ export function Where({ s, act, busy }) {
 				<span className="vfx-label">{__('Categories', 'visionforgex')}</span>
 				{w.categories.length > 12 ? <input className="vfx-input" type="search" placeholder={__('Find a category', 'visionforgex')} value={find} onChange={(e) => setFind(e.target.value)} /> : null}
 				<Picks items={cats} value={r.categories} onChange={(v) => up('categories', v)} label={__('Categories', 'visionforgex')} />
+				{w.tags.length ? (
+					<>
+						<span className="vfx-label">{__('Tags', 'visionforgex')}</span>
+						<Picks items={w.tags.slice(0, 60)} value={r.tags} onChange={(v) => up('tags', v)} label={__('Tags', 'visionforgex')} />
+					</>
+				) : null}
+				<span className="vfx-label">{__('Authors', 'visionforgex')}</span>
+				<Picks items={w.authors} value={r.authors} onChange={(v) => up('authors', v)} label={__('Authors', 'visionforgex')} />
+				{w.templates.length ? (
+					<>
+						<span className="vfx-label">{__('Page templates', 'visionforgex')}</span>
+						<Picks items={w.templates} value={r.templates} onChange={(v) => up('templates', v)} label={__('Page templates', 'visionforgex')} />
+					</>
+				) : null}
 				<span className="vfx-label">{__('Addresses containing', 'visionforgex')}</span>
 				<div className="vfx-addrow">
 					<input className="vfx-input" type="text" value={url} placeholder="/sponsored/" onChange={(e) => setUrl(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter' && url.trim()) { up('urls', r.urls.concat(url.trim())); setUrl(''); } }} />
@@ -511,7 +525,7 @@ export function Where({ s, act, busy }) {
 					</Button>
 				</div>
 				<Picks items={r.urls.map((u) => ({ id: u, name: u }))} value={r.urls} onChange={(v) => up('urls', v)} label={__('Addresses', 'visionforgex')} />
-				<p className="vfx-foot">{sprintf(_n('%d page is set to "No ads on this page" in its own edit screen.', '%d pages are set to "No ads on this page" in their own edit screens.', w.postsOff, 'visionforgex'), w.postsOff)}</p>
+				<p className="vfx-foot">{sprintf(_n('%d page is set to "No ads on this page" in its own edit screen ("VisionForgeX ads" box).', '%d pages are set to "No ads on this page" in their own edit screens ("VisionForgeX ads" box).', w.postsOff, 'visionforgex'), w.postsOff)}</p>
 			</Card>
 
 			<Card title={__('Visitors who see no ads', 'visionforgex')} icon="filter" className={r.on ? '' : 'is-dim'}>

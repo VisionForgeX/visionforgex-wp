@@ -43,6 +43,7 @@ function Edit({ attributes, setAttributes }) {
 			<InspectorControls>
 				<PanelBody title={__('Ad', 'visionforgex')}>
 					<SelectControl label={__('Which ad', 'visionforgex')} value={value} options={options()} onChange={choose} />
+					{!attributes.tag && data.mode === 'auto' ? <Notice status="info" isDismissible={false}>{__('VisionForgeX places your ads automatically right now, and in that mode only spots with an Ad Tag load. Choose an Ad Tag, or switch placement in VisionForgeX → Placements.', 'visionforgex')}</Notice> : null}
 					{attributes.tag && !tag ? <Notice status="warning" isDismissible={false}>{__('This Ad Tag is no longer on VisionForgeX, so nothing shows here.', 'visionforgex')}</Notice> : null}
 					<p>
 						<a href={data.dashboard}>{__('Manage Ad Tags', 'visionforgex')}</a>

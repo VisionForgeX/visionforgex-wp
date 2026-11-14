@@ -133,6 +133,10 @@ class VisionForgeX_Placements {
 			'window.visionforgexBlock = ' . wp_json_encode(
 				array(
 					'connected' => VisionForgeX_Store::connected(),
+					'mode'      => ( function () {
+						$snap = VisionForgeX_Store::snapshot();
+						return $snap && isset( $snap['settings']['mode'] ) ? (string) $snap['settings']['mode'] : 'auto';
+					} )(),
 					'tags'      => $tags,
 					'dashboard' => admin_url( 'admin.php?page=visionforgex#adtags' ),
 				)

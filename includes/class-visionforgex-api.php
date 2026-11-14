@@ -210,7 +210,11 @@ class VisionForgeX_Api {
 		if ( $old !== $new ) {
 			VisionForgeX_Adstxt::apply();
 		}
-		if ( ! $before || wp_json_encode( isset( $before['tag'] ) ? $before['tag'] : null ) !== wp_json_encode( isset( $snapshot['tag'] ) ? $snapshot['tag'] : null ) ) {
+		$part = function ( $s, $k ) {
+			return wp_json_encode( $s && isset( $s[ $k ] ) ? $s[ $k ] : null );
+		};
+		// The page's HTML changes with the tag, the site's switches or its Ad Tags (the spots print from them): clear the cache.
+		if ( ! $before || $part( $before, 'tag' ) !== $part( $snapshot, 'tag' ) || $part( $before, 'settings' ) !== $part( $snapshot, 'settings' ) || $part( $before, 'site' ) !== $part( $snapshot, 'site' ) ) {
 			VisionForgeX_Health::clear_caches();
 		}
 	}

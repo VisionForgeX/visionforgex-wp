@@ -4,10 +4,11 @@
  */
 import { Mark, Icon, Light, Toasts } from './ui.jsx';
 import { Welcome, Home, GoLive, AdsTxt, Settings, siteStatus } from './views.jsx';
-import { Formats, AdTags, Where, Tools } from './views2.jsx';
+import { Formats, Where, Tools } from './views2.jsx';
+import { Placements, Privacy } from './views3.jsx';
 
 const { useState, useEffect, useCallback, render, createRoot } = wp.element;
-import { __ } from './i18n.js';
+import { __, sprintf } from './i18n.js';
 const apiFetch = wp.apiFetch;
 
 const boot = window.visionforgexBoot || {};
@@ -15,8 +16,9 @@ const TABS = [
 	['home', 'home', __('Home', 'visionforgex')],
 	['golive', 'rocket', __('Go live', 'visionforgex')],
 	['formats', 'layers', __('Formats', 'visionforgex')],
-	['adtags', 'tag', __('Ad Tags', 'visionforgex')],
+	['placements', 'tag', __('Placements', 'visionforgex')],
 	['where', 'filter', __('Where ads show', 'visionforgex')],
+	['privacy', 'lock', __('Privacy & signals', 'visionforgex')],
 	['tools', 'wrench', __('Site tools', 'visionforgex')],
 	['adstxt', 'file', 'ads.txt'],
 	['settings', 'gear', __('Settings', 'visionforgex')],
@@ -41,7 +43,7 @@ function App() {
 	const [busy, setBusy] = useState({});
 	const [toasts, setToasts] = useState([]);
 	const [theme, setThemeState] = useState(readStore('visionforgex-theme', 'auto'));
-	const first = (window.location.hash || '').replace('#', '');
+	const first = ((window.location.hash || '').replace('#', '') === 'adtags' ? 'placements' : (window.location.hash || '').replace('#', ''));
 	const [tab, setTab] = useState(TABS.some((t) => t[0] === first) ? first : boot.came === 'connected' ? 'golive' : 'home');
 	const [came] = useState(boot.came);
 
@@ -74,7 +76,8 @@ function App() {
 	// A link to another section of the dashboard (…#adtags) opens it without reloading.
 	useEffect(() => {
 		const on = () => {
-			const h = (window.location.hash || '').replace('#', '');
+			let h = (window.location.hash || '').replace('#', '');
+			if (h === 'adtags') h = 'placements';
 			if (TABS.some((t) => t[0] === h)) setTab(h);
 		};
 		window.addEventListener('hashchange', on);
@@ -98,6 +101,9 @@ function App() {
 		rules: __('Where ads show: saved. It applies from the next page view.', 'visionforgex'),
 		speed: __('Saved, and that plugin\u2019s cache cleared.', 'visionforgex'),
 		'speed-clear': __('Cache cleared.', 'visionforgex'),
+		incontent: __('In-content ads saved. They show from the next page view.', 'visionforgex'),
+		spots: __('Spots saved. They show from the next page view.', 'visionforgex'),
+		staging: __('Staging addresses saved.', 'visionforgex'),
 	};
 
 	function act(name, data, quiet) {
@@ -113,6 +119,7 @@ function App() {
 				else if (name === 'adstxt' && r.result && !r.result.ok && r.result.message) toast(r.result.message, 'bad');
 				else if (name === 'settings') toast(r.changed && r.changed.length ? __('Saved and published to your site.', 'visionforgex') : __('Nothing changed.', 'visionforgex'));
 				else if ((name === 'other-off' || name === 'other-undo') && r.message) toast(r.message);
+				else if (name === 'import') toast(sprintf(__('%d spots made, switched off. Check them and switch them on.', 'visionforgex'), r.made || 0));
 				else if (DONE[name] && !quiet) toast(DONE[name]);
 				if (name === 'disconnect') setTab('home');
 				return r;
@@ -136,7 +143,7 @@ function App() {
 	}
 
 	const [state, title] = siteStatus(s);
-	const View = { home: Home, golive: GoLive, formats: Formats, adtags: AdTags, where: Where, tools: Tools, adstxt: AdsTxt, settings: Settings }[tab] || Home;
+	const View = { home: Home, golive: GoLive, formats: Formats, placements: Placements, where: Where, privacy: Privacy, tools: Tools, adstxt: AdsTxt, settings: Settings }[tab] || Home;
 	return (
 		<>
 			<header className="vfx-top">

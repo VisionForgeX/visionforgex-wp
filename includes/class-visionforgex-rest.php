@@ -42,6 +42,10 @@ class VisionForgeX_Rest {
 			'speed-clear' => array( 'POST', 'speed_clear' ),
 			'other-off'   => array( 'POST', 'other_off' ),
 			'other-undo'  => array( 'POST', 'other_undo' ),
+			'incontent'   => array( 'POST', 'incontent' ),
+			'spots'       => array( 'POST', 'spots' ),
+			'staging'     => array( 'POST', 'staging' ),
+			'import'      => array( 'POST', 'import' ),
 		);
 		foreach ( $r as $path => $def ) {
 			register_rest_route(
@@ -83,16 +87,16 @@ class VisionForgeX_Rest {
 			);
 		}
 		return array(
-			'plugin'     => VISIONFORGEX_VERSION,
-			'platform'   => untrailingslashit( VISIONFORGEX_PLATFORM ),
-			'home'       => home_url( '/' ),
-			'domain'     => VisionForgeX_Store::domain( home_url() ),
-			'siteName'   => wp_strip_all_tags( get_bloginfo( 'name' ) ),
-			'wp'         => get_bloginfo( 'version' ),
-			'php'        => PHP_VERSION,
-			'staging'    => VisionForgeX_Store::staging_reason(),
-			'connected'  => (bool) $c,
-			'connection' => $c ? array(
+			'plugin'       => VISIONFORGEX_VERSION,
+			'platform'     => untrailingslashit( VISIONFORGEX_PLATFORM ),
+			'home'         => home_url( '/' ),
+			'domain'       => VisionForgeX_Store::domain( home_url() ),
+			'siteName'     => wp_strip_all_tags( get_bloginfo( 'name' ) ),
+			'wp'           => get_bloginfo( 'version' ),
+			'php'          => PHP_VERSION,
+			'staging'      => VisionForgeX_Store::staging_reason(),
+			'connected'    => (bool) $c,
+			'connection'   => $c ? array(
 				'siteId'      => $c['siteId'],
 				'domain'      => $c['domain'],
 				'key'         => substr( $c['keyId'], 0, 8 ) . '…' . substr( $c['keyId'], -4 ),
@@ -103,15 +107,15 @@ class VisionForgeX_Rest {
 				'lastError'   => $c['lastError'],
 				'sealed'      => null !== VisionForgeX_Store::secret(),
 			) : null,
-			'site'       => $snap && isset( $snap['site'] ) ? $snap['site'] : null,
-			'account'    => $snap && isset( $snap['account'] ) ? $snap['account'] : null,
-			'links'      => $snap && isset( $snap['links'] ) ? $snap['links'] : null,
-			'features'   => $features,
-			'tag'        => array(
+			'site'         => $snap && isset( $snap['site'] ) ? $snap['site'] : null,
+			'account'      => $snap && isset( $snap['account'] ) ? $snap['account'] : null,
+			'links'        => $snap && isset( $snap['links'] ) ? $snap['links'] : null,
+			'features'     => $features,
+			'tag'          => array(
 				'scripts' => $scripts,
 				'serving' => VisionForgeX_Store::connected() && VisionForgeX_Frontend::scripts() && $snap && ! empty( $snap['site']['approved'] ) && ! empty( $snap['site']['enabled'] ) && ! $set['paused'] && '' === VisionForgeX_Store::staging_reason(),
 			),
-			'adsTxt'     => array_merge(
+			'adsTxt'       => array_merge(
 				VisionForgeX_Adstxt::status(),
 				array(
 					'lines' => VisionForgeX_Adstxt::lines(),
@@ -121,17 +125,31 @@ class VisionForgeX_Rest {
 					'url'   => home_url( '/ads.txt' ),
 				)
 			),
-			'settings'   => array(
+			'settings'     => array(
 				'paused'   => (bool) $set['paused'],
 				'pausedAt' => (string) $set['pausedAt'],
 			),
-			'health'     => VisionForgeX_Health::last(),
-			'history'    => array_slice( VisionForgeX_Store::history(), 0, 20 ),
-			'error'      => false !== $err ? (string) $err : '',
-			'ads'        => $snap && isset( $snap['settings'] ) && is_array( $snap['settings'] ) ? $snap['settings'] : null,
-			'where'      => VisionForgeX_Rules::for_app(),
-			'speed'      => VisionForgeX_Tools::speed(),
-			'others'     => VisionForgeX_Tools::others(),
+			'health'       => VisionForgeX_Health::last(),
+			'history'      => array_slice( VisionForgeX_Store::history(), 0, 20 ),
+			'error'        => false !== $err ? (string) $err : '',
+			'ads'          => $snap && isset( $snap['settings'] ) && is_array( $snap['settings'] ) ? $snap['settings'] : null,
+			'where'        => VisionForgeX_Rules::for_app(),
+			'speed'        => VisionForgeX_Tools::speed(),
+			'others'       => VisionForgeX_Tools::others(),
+			'placements'   => VisionForgeX_Spots::for_app() + array(
+				'pick'   => wp_create_nonce( 'visionforgex_pick' ),
+				'pages'  => self::preview_pages(),
+				'import' => VisionForgeX_Import::plan(),
+			),
+			'privacy'      => array(
+				'flags'          => VisionForgeX_Store::wp_flags(),
+				'consentPlugins' => array_values( array_unique( VisionForgeX_Signals::consent_plugins() ) ),
+			),
+			'stagingHosts' => VisionForgeX_Store::staging_hosts(),
+			'multisite'    => is_multisite() ? array(
+				'main'    => is_main_site(),
+				'network' => network_admin_url( 'admin.php?page=visionforgex-network' ),
+			) : null,
 		);
 	}
 
@@ -378,5 +396,73 @@ class VisionForgeX_Rest {
 	public static function other_undo( $req ) {
 		$r = VisionForgeX_Tools::undo( sanitize_key( (string) $req->get_param( 'key' ) ) );
 		return $r['ok'] ? self::ok( array( 'message' => $r['message'] ) ) : self::fail( $r['message'] );
+	}
+
+	/** @return array Pages to open in the visual editor: the home page and the newest posts and pages. */
+	private static function preview_pages() {
+		$out = array(
+			array(
+				'url'   => home_url( '/' ),
+				'title' => __( 'Home page', 'visionforgex' ),
+			),
+		);
+		foreach ( get_posts(
+			array(
+				'post_type'      => array( 'post', 'page' ),
+				'posts_per_page' => 6,
+				'post_status'    => 'publish',
+			)
+		) as $p ) {
+			$out[] = array(
+				'url'   => get_permalink( $p ),
+				'title' => html_entity_decode( get_the_title( $p ), ENT_QUOTES, 'UTF-8' ),
+			);
+		}
+		return $out;
+	}
+
+	/**
+	 * POST incontent {incontent}: the in-content rule (kept in WordPress).
+	 *
+	 * @param WP_REST_Request $req Request.
+	 */
+	public static function incontent( $req ) {
+		$in = $req->get_param( 'incontent' );
+		$o  = VisionForgeX_Spots::save_incontent( is_array( $in ) ? $in : array() );
+		VisionForgeX_Store::log( $o['on'] ? __( 'In-content ads: saved (on)', 'visionforgex' ) : __( 'In-content ads: off', 'visionforgex' ) );
+		VisionForgeX_Health::clear_caches();
+		return self::ok();
+	}
+
+	/**
+	 * POST spots {spots}: the theme and selector spots (kept in WordPress).
+	 *
+	 * @param WP_REST_Request $req Request.
+	 */
+	public static function spots( $req ) {
+		$in = $req->get_param( 'spots' );
+		$s  = VisionForgeX_Spots::save_spots( is_array( $in ) ? $in : array() );
+		/* translators: %d: how many spots */
+		VisionForgeX_Store::log( sprintf( __( 'Spots saved (%d)', 'visionforgex' ), count( $s ) ) );
+		VisionForgeX_Health::clear_caches();
+		return self::ok();
+	}
+
+	/**
+	 * POST staging {hosts}: the publisher's own staging addresses.
+	 *
+	 * @param WP_REST_Request $req Request.
+	 */
+	public static function staging( $req ) {
+		VisionForgeX_Store::save_staging_hosts( (array) $req->get_param( 'hosts' ) );
+		VisionForgeX_Store::log( __( 'Staging addresses saved', 'visionforgex' ) );
+		return self::ok();
+	}
+
+	/** POST import: Ad Inserter's blocks as spots (switched off). */
+	public static function import() {
+		$r = VisionForgeX_Import::run();
+		VisionForgeX_Health::clear_caches();
+		return self::ok( array( 'made' => $r['made'] ) );
 	}
 }

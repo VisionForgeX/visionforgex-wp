@@ -187,10 +187,10 @@ fs.writeFileSync(path.join(CONFIG, '_ads-txt-default.json'), JSON.stringify({ co
 	await page.screenshot({ path: path.join(SHOTS, 'p2-2-formats-desktop-preview.png') });
 
 	console.log('2. Ad Tags, the shortcode, the block, the widget');
-	await page.click('.vfx-tab:has-text("Ad Tags")');
-	await page.waitForSelector('.vfx-empty');
-	await page.fill('.vfx-field input[type="text"]', 'Sidebar');
-	await page.click('.vfx-chips .vfx-pick:text-is("300x600")');
+	await page.click('.vfx-tab:has-text("Placements")');
+	await page.waitForSelector('[data-vfx-adtags] .vfx-empty');
+	await page.fill('[data-vfx-adtags] .vfx-field input[type="text"]', 'Sidebar');
+	await page.click('[data-vfx-adtags] .vfx-chips .vfx-pick:text-is("300x600")');
 	await page.click('button:has-text("Add Ad Tag")');
 	await page.waitForSelector('.vfx-tagrow');
 	const tag = (readJson(site.file).adTags || []).find((t) => t.name === 'Sidebar');
@@ -217,9 +217,10 @@ fs.writeFileSync(path.join(CONFIG, '_ads-txt-default.json'), JSON.stringify({ co
 	check('the per-post box is on the edit screen', (await page.locator('#visionforgex-ads').count()) === 1);
 	await page.goto(WP + '/wp-admin/admin.php?page=visionforgex#adtags');
 	await page.waitForSelector('.vfx-tagrow');
+	check('the old #adtags address opens Placements', (await page.locator('.vfx-tab.is-on').innerText()).includes('Placements'));
 	await page.click('.vfx-tagrow button:has-text("Remove")');
 	await page.click('.vfx-modal button.vfx-btn--danger');
-	await page.waitForSelector('.vfx-empty');
+	await page.waitForSelector('[data-vfx-adtags] .vfx-empty');
 	check('Ad Tag removed on VisionForgeX', !(readJson(site.file).adTags || []).some((t) => t.id === tag.id));
 	html = (await get(WP + '/spots-test/')).body;
 	check('its shortcode and block now print nothing; the page is otherwise fine', !html.includes(tag.id) && html.includes('Intro.'));
@@ -356,7 +357,7 @@ fs.writeFileSync(path.join(CONFIG, '_ads-txt-default.json'), JSON.stringify({ co
 	await sleep(700);
 	await page.screenshot({ path: path.join(SHOTS, 'p2-6-formats-dark.png') });
 	await page.setViewportSize({ width: 390, height: 844 });
-	for (const t of ['Formats', 'Ad Tags', 'Where ads show', 'Site tools']) {
+	for (const t of ['Formats', 'Placements', 'Where ads show', 'Site tools']) {
 		await page.click('.vfx-tab:has-text("' + t + '")');
 		await sleep(500);
 		const wide = await page.evaluate(() => document.documentElement.scrollWidth);

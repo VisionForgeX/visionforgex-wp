@@ -2,8 +2,8 @@
 /**
  * Plugin Name:       VisionForgeX – Ad Management & Yield
  * Plugin URI:        https://visionforgex.com/
- * Description:       Connects your site to VisionForgeX in one click: your ad tag and ads.txt lines go on the site by themselves, speed plugins are kept off the tag, and your ad formats, Ad Tags and where ads show are managed from WordPress.
- * Version:           1.1.0
+ * Description:       Connects your site to VisionForgeX in one click: your ad tag and ads.txt lines go on the site by themselves, speed plugins are kept off the tag, and your ad formats, placements, consent and where ads show are managed from WordPress.
+ * Version:           1.2.0
  * Requires at least: 6.3
  * Requires PHP:      7.4
  * Author:            VisionForgeX
@@ -18,7 +18,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'VISIONFORGEX_VERSION', '1.1.0' );
+define( 'VISIONFORGEX_VERSION', '1.2.0' );
 define( 'VISIONFORGEX_FILE', __FILE__ );
 define( 'VISIONFORGEX_DIR', plugin_dir_path( __FILE__ ) );
 define( 'VISIONFORGEX_URL', plugin_dir_url( __FILE__ ) );
@@ -39,6 +39,12 @@ require_once VISIONFORGEX_DIR . 'includes/class-visionforgex-rules.php';
 require_once VISIONFORGEX_DIR . 'includes/class-visionforgex-placements.php';
 require_once VISIONFORGEX_DIR . 'includes/class-visionforgex-widget.php';
 require_once VISIONFORGEX_DIR . 'includes/class-visionforgex-tools.php';
+require_once VISIONFORGEX_DIR . 'includes/class-visionforgex-spots.php';
+require_once VISIONFORGEX_DIR . 'includes/class-visionforgex-signals.php';
+require_once VISIONFORGEX_DIR . 'includes/class-visionforgex-push.php';
+require_once VISIONFORGEX_DIR . 'includes/class-visionforgex-picker.php';
+require_once VISIONFORGEX_DIR . 'includes/class-visionforgex-import.php';
+require_once VISIONFORGEX_DIR . 'includes/class-visionforgex-network.php';
 
 VisionForgeX_Frontend::init();
 VisionForgeX_Adstxt::init();
@@ -49,6 +55,16 @@ VisionForgeX_Health::init();
 VisionForgeX_Rules::init();
 VisionForgeX_Placements::init();
 VisionForgeX_Tools::init();
+VisionForgeX_Spots::init();
+VisionForgeX_Signals::init();
+VisionForgeX_Push::init();
+VisionForgeX_Picker::init();
+VisionForgeX_Network::init();
+
+if ( defined( 'WP_CLI' ) && WP_CLI ) {
+	require_once VISIONFORGEX_DIR . 'includes/class-visionforgex-cli.php';
+	WP_CLI::add_command( 'visionforgex', 'VisionForgeX_CLI' );
+}
 
 register_activation_hook( __FILE__, array( 'VisionForgeX_Store', 'activate' ) );
 register_deactivation_hook( __FILE__, array( 'VisionForgeX_Store', 'deactivate' ) );

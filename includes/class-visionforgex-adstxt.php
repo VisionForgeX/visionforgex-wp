@@ -71,7 +71,11 @@ class VisionForgeX_Adstxt {
 		$direct   = self::filesystem() !== null;
 		$mode     = VisionForgeX_Store::settings()['adstxtMode'];
 		$reason   = '';
-		if ( ! self::at_root() ) {
+		if ( is_multisite() && ! is_main_site() && ( $exists || 'file' === $mode || ! self::at_root() ) ) {
+			// One ads.txt file serves every site of the network: only the main site may write into it.
+			$out    = 'manual';
+			$reason = __( 'This network\'s ads.txt file is shared by all its sites, so only the main site keeps it. Add these lines to it there, or from the main site\'s VisionForgeX dashboard.', 'visionforgex' );
+		} elseif ( ! self::at_root() ) {
 			$out    = 'manual';
 			$reason = __( 'WordPress runs in a sub-folder, so it cannot answer for /ads.txt at the root of your domain. Add the lines to the ads.txt file at the root by hand.', 'visionforgex' );
 		} elseif ( $exists || 'file' === $mode ) {

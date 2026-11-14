@@ -27,11 +27,29 @@ class VisionForgeX_Store {
 	 * @return string[]
 	 */
 	public static function all_options() {
-		return array( self::CONNECTION, self::SNAPSHOT, self::SETTINGS, self::HEALTH, self::HISTORY, 'visionforgex_adstxt_written', 'visionforgex_rules', 'visionforgex_speed', 'visionforgex_finder' );
+		return array( self::CONNECTION, self::SNAPSHOT, self::SETTINGS, self::HEALTH, self::HISTORY, 'visionforgex_adstxt_written', 'visionforgex_rules', 'visionforgex_speed', 'visionforgex_finder', 'visionforgex_incontent', 'visionforgex_spots', 'visionforgex_staging_hosts', 'visionforgex_push_nonces' );
 	}
 
-	/** Plugin activated: the background jobs. Nothing is sent anywhere until the publisher clicks Connect. */
-	public static function activate() {
+	/**
+	 * Plugin activated: the background jobs. Nothing is sent anywhere until the publisher clicks Connect.
+	 *
+	 * @param bool $network_wide Activated for a whole network.
+	 */
+	public static function activate( $network_wide = false ) {
+		if ( $network_wide && is_multisite() ) {
+			// Activated for the whole network: every site gets its jobs (new sites get them as they are made: VisionForgeX_Network).
+			foreach ( get_sites(
+				array(
+					'number' => 1000,
+					'fields' => 'ids',
+				)
+			) as $id ) {
+				switch_to_blog( (int) $id );
+				self::activate( false );
+				restore_current_blog();
+			}
+			return;
+		}
 		if ( ! wp_next_scheduled( 'visionforgex_sync' ) ) {
 			wp_schedule_event( time() + 600, 'twicedaily', 'visionforgex_sync' );
 		}
@@ -41,8 +59,25 @@ class VisionForgeX_Store {
 		add_option( self::SETTINGS, self::default_settings() );
 	}
 
-	/** Plugin deactivated: the jobs stop. The tag and the served ads.txt stop with the plugin by themselves. */
-	public static function deactivate() {
+	/**
+	 * Plugin deactivated: the jobs stop. The tag and the served ads.txt stop with the plugin by themselves.
+	 *
+	 * @param bool $network_wide Deactivated for a whole network.
+	 */
+	public static function deactivate( $network_wide = false ) {
+		if ( $network_wide && is_multisite() ) {
+			foreach ( get_sites(
+				array(
+					'number' => 1000,
+					'fields' => 'ids',
+				)
+			) as $id ) {
+				switch_to_blog( (int) $id );
+				self::deactivate( false );
+				restore_current_blog();
+			}
+			return;
+		}
 		wp_clear_scheduled_hook( 'visionforgex_sync' );
 		wp_clear_scheduled_hook( 'visionforgex_daily' );
 	}
@@ -251,12 +286,61 @@ class VisionForgeX_Store {
 			/* translators: %s: the site's host name */
 			return sprintf( __( '%s looks like a staging or local copy.', 'visionforgex' ), $host );
 		}
+		foreach ( self::staging_hosts() as $h ) {
+			if ( $host === $h || ( 0 === strpos( $h, '*.' ) && substr( $host, -strlen( $h ) + 1 ) === substr( $h, 1 ) ) ) {
+				/* translators: %s: the site's host name */
+				return sprintf( __( '%s is on your list of staging addresses.', 'visionforgex' ), $host );
+			}
+		}
 		$c = self::connection();
 		if ( $c && self::domain( home_url() ) !== $c['domain'] ) {
 			/* translators: 1: this copy's address, 2: the connected site's domain */
 			return sprintf( __( 'This copy runs at %1$s, but the connected site is %2$s.', 'visionforgex' ), self::domain( home_url() ), $c['domain'] );
 		}
 		return '';
+	}
+
+	/** @return string[] The publisher's own staging addresses (Settings): host names, or *.example.com. */
+	public static function staging_hosts() {
+		$h = get_option( 'visionforgex_staging_hosts', array() );
+		return is_array( $h ) ? $h : array();
+	}
+
+	/**
+	 * Saves the staging addresses, cleaned.
+	 *
+	 * @param array $in Host names (or addresses).
+	 * @return string[]
+	 */
+	public static function save_staging_hosts( array $in ) {
+		$out = array();
+		foreach ( $in as $h ) {
+			$h = strtolower( trim( (string) $h ) );
+			if ( preg_match( '#^https?://#', $h ) ) {
+				$h = (string) wp_parse_url( $h, PHP_URL_HOST );
+			}
+			if ( preg_match( '/^(\*\.)?[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+$/', $h ) && strlen( $h ) <= 200 ) {
+				$out[] = $h;
+			}
+		}
+		$out = array_values( array_unique( array_slice( $out, 0, 50 ) ) );
+		update_option( 'visionforgex_staging_hosts', $out, true );
+		return $out;
+	}
+
+	/**
+	 * The plugin's switches on VisionForgeX for the tag (consent, signals, qa), from the last copy of the site.
+	 *
+	 * @return array
+	 */
+	public static function wp_flags() {
+		$s = self::snapshot();
+		$w = $s && isset( $s['settings']['wordpress'] ) && is_array( $s['settings']['wordpress'] ) ? $s['settings']['wordpress'] : array();
+		return array(
+			'consent' => ! empty( $w['consent'] ),
+			'signals' => ! empty( $w['signals'] ),
+			'qa'      => ! empty( $w['qa'] ),
+		);
 	}
 
 	/**

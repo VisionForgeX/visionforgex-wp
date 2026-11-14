@@ -2,6 +2,7 @@
  * The dashboard's screens: Welcome (not connected), Home, Go live, ads.txt, Settings. No reporting here: money,
  * impressions and charts stay on visionforgex.com ("Open your reports").
  */
+import { StagingCard } from './views3.jsx';
 import { Mark, Icon, Light, Chip, Switch, Button, Card, Skeleton, Modal, CopyButton, Ring, Burst, ago, when } from './ui.jsx';
 
 const { useState, useEffect } = wp.element;
@@ -463,6 +464,16 @@ export function Settings({ s, act, busy, theme, setTheme }) {
 					</Button>
 				</div>
 			</Card>
+
+			<StagingCard s={s} act={act} busy={busy} />
+			{s.multisite ? (
+				<Card title={__('Network', 'visionforgex')} icon="globe">
+					<p className="vfx-muted">{__('This site is part of a network. Each site connects on its own; the network administrator sees them all on one page.', 'visionforgex')}</p>
+					<div className="vfx-row">
+						<Button small href={s.multisite.network}>{__('All sites of the network', 'visionforgex')}</Button>
+					</div>
+				</Card>
+			) : null}
 
 			<Card title={__('Appearance', 'visionforgex')} icon="sun">
 				<div className="vfx-seg" role="radiogroup" aria-label={__('Theme', 'visionforgex')}>

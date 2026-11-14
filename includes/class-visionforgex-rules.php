@@ -39,6 +39,9 @@ class VisionForgeX_Rules {
 			'on'         => false,
 			'postTypes'  => array(),
 			'categories' => array(),
+			'tags'       => array(),
+			'authors'    => array(),
+			'templates'  => array(),
 			'urls'       => array(),
 			'roles'      => array(),
 			'loggedIn'   => false,
@@ -66,6 +69,9 @@ class VisionForgeX_Rules {
 		$r['on']         = ! empty( $in['on'] );
 		$r['postTypes']  = array_values( array_intersect( array_map( 'sanitize_key', (array) ( isset( $in['postTypes'] ) ? $in['postTypes'] : array() ) ), $public_types ) );
 		$r['categories'] = array_values( array_filter( array_map( 'absint', (array) ( isset( $in['categories'] ) ? $in['categories'] : array() ) ) ) );
+		$r['tags']       = array_values( array_filter( array_map( 'absint', (array) ( isset( $in['tags'] ) ? $in['tags'] : array() ) ) ) );
+		$r['authors']    = array_values( array_filter( array_map( 'absint', (array) ( isset( $in['authors'] ) ? $in['authors'] : array() ) ) ) );
+		$r['templates']  = array_values( array_intersect( array_map( 'strval', (array) ( isset( $in['templates'] ) ? $in['templates'] : array() ) ), array_keys( self::templates() ) ) );
 		$r['roles']      = array_values( array_intersect( array_map( 'sanitize_key', (array) ( isset( $in['roles'] ) ? $in['roles'] : array() ) ), array_keys( wp_roles()->get_names() ) ) );
 		$r['loggedIn']   = ! empty( $in['loggedIn'] );
 		$r['members']    = ! empty( $in['members'] );
@@ -89,6 +95,22 @@ class VisionForgeX_Rules {
 		foreach ( get_post_types( array( 'public' => true ), 'objects' ) as $t ) {
 			if ( 'attachment' !== $t->name ) {
 				$out[ $t->name ] = $t->labels->name;
+			}
+		}
+		return $out;
+	}
+
+	/** @return array Page templates of the theme: [file => name] (block themes: [slug => title]). */
+	public static function templates() {
+		$out = array();
+		foreach ( (array) wp_get_theme()->get_page_templates( null, 'page' ) as $file => $name ) {
+			$out[ (string) $file ] = (string) $name;
+		}
+		if ( function_exists( 'get_block_templates' ) && function_exists( 'wp_is_block_theme' ) && wp_is_block_theme() ) {
+			foreach ( get_block_templates( array(), 'wp_template' ) as $t ) {
+				if ( ! empty( $t->is_custom ) ) {
+					$out[ (string) $t->slug ] = (string) $t->title;
+				}
 			}
 		}
 		return $out;
@@ -170,6 +192,15 @@ class VisionForgeX_Rules {
 		if ( $r['categories'] && ( is_category( $r['categories'] ) || ( is_singular( 'post' ) && has_category( $r['categories'], get_queried_object_id() ) ) ) ) {
 			return 'category';
 		}
+		if ( $r['tags'] && ( is_tag( $r['tags'] ) || ( is_singular( 'post' ) && has_tag( $r['tags'], get_queried_object_id() ) ) ) ) {
+			return 'tag';
+		}
+		if ( $r['authors'] && ( is_author( $r['authors'] ) || ( is_singular() && in_array( (int) get_post_field( 'post_author', get_queried_object_id() ), $r['authors'], true ) ) ) ) {
+			return 'author';
+		}
+		if ( $r['templates'] && is_singular() && in_array( (string) get_page_template_slug( get_queried_object_id() ), $r['templates'], true ) ) {
+			return 'template';
+		}
 		if ( $r['urls'] && isset( $_SERVER['REQUEST_URI'] ) ) {
 			$uri = strtolower( esc_url_raw( wp_unslash( $_SERVER['REQUEST_URI'] ) ) );
 			foreach ( $r['urls'] as $u ) {
@@ -232,7 +263,7 @@ class VisionForgeX_Rules {
 	 * @return string 'off' or ''.
 	 */
 	public static function clean_meta( $v ) {
-		return 'off' === $v ? 'off' : '';
+		return in_array( $v, array( 'off', 'fewer' ), true ) ? $v : '';
 	}
 
 	/** The box on the edit screen (only once the site is connected). */
@@ -248,9 +279,18 @@ class VisionForgeX_Rules {
 	 */
 	public static function render_box( $post ) {
 		wp_nonce_field( 'visionforgex_ads_box', 'visionforgex_ads_nonce' );
-		$off = 'off' === get_post_meta( $post->ID, self::META, true );
-		echo '<p><label><input type="checkbox" name="visionforgex_ads_off" value="1"' . checked( $off, true, false ) . '> ' . esc_html__( 'No ads on this page', 'visionforgex' ) . '</label></p>';
-		echo '<p class="description">' . esc_html__( 'The VisionForgeX tag is left off this page entirely.', 'visionforgex' ) . '</p>';
+		$v    = (string) get_post_meta( $post->ID, self::META, true );
+		$sens = '1' === get_post_meta( $post->ID, VisionForgeX_Signals::SENSITIVE, true );
+		$opts = array(
+			''      => __( 'Ads as usual', 'visionforgex' ),
+			'fewer' => __( 'Fewer ads on this page', 'visionforgex' ),
+			'off'   => __( 'No ads on this page', 'visionforgex' ),
+		);
+		foreach ( $opts as $k => $label ) {
+			echo '<p style="margin:4px 0"><label><input type="radio" name="visionforgex_ads" value="' . esc_attr( $k ) . '"' . checked( $v, $k, false ) . '> ' . esc_html( $label ) . '</label></p>';
+		}
+		echo '<p style="margin:10px 0 4px"><label><input type="checkbox" name="visionforgex_sensitive" value="1"' . checked( $sens, true, false ) . '> ' . esc_html__( 'Sensitive content', 'visionforgex' ) . '</label></p>';
+		echo '<p class="description">' . esc_html__( '"No ads" leaves the VisionForgeX tag off this page. "Fewer" and "Sensitive" are told to the tag when page facts are on (VisionForgeX → Privacy & signals), so buyers who avoid sensitive pages stay away.', 'visionforgex' ) . '</p>';
 	}
 
 	/**
@@ -264,16 +304,29 @@ class VisionForgeX_Rules {
 		if ( ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) || wp_is_post_revision( $post_id ) || ! current_user_can( 'edit_post', $post_id ) ) {
 			return;
 		}
-		$off = ! empty( $_POST['visionforgex_ads_off'] );
-		$was = 'off' === get_post_meta( $post_id, self::META, true );
-		if ( $off ) {
-			update_post_meta( $post_id, self::META, 'off' );
+		$v    = isset( $_POST['visionforgex_ads'] ) ? self::clean_meta( sanitize_key( wp_unslash( $_POST['visionforgex_ads'] ) ) ) : '';
+		$was  = (string) get_post_meta( $post_id, self::META, true );
+		$sens = ! empty( $_POST['visionforgex_sensitive'] );
+		if ( '' !== $v ) {
+			update_post_meta( $post_id, self::META, $v );
 		} else {
 			delete_post_meta( $post_id, self::META );
 		}
-		if ( $off !== $was ) {
-			/* translators: %s: the post's title */
-			VisionForgeX_Store::log( sprintf( $off ? __( 'No ads on "%s"', 'visionforgex' ) : __( 'Ads back on "%s"', 'visionforgex' ), get_the_title( $post ) ) );
+		if ( $sens ) {
+			update_post_meta( $post_id, VisionForgeX_Signals::SENSITIVE, '1' );
+		} else {
+			delete_post_meta( $post_id, VisionForgeX_Signals::SENSITIVE );
+		}
+		if ( $v !== $was ) {
+			$words = array(
+				/* translators: %s: the post's title */
+				''      => __( 'Ads as usual on "%s"', 'visionforgex' ),
+				/* translators: %s: the post's title */
+				'fewer' => __( 'Fewer ads on "%s"', 'visionforgex' ),
+				/* translators: %s: the post's title */
+				'off'   => __( 'No ads on "%s"', 'visionforgex' ),
+			);
+			VisionForgeX_Store::log( sprintf( $words[ $v ], get_the_title( $post ) ) );
 		}
 	}
 
@@ -305,6 +358,38 @@ class VisionForgeX_Rules {
 				'name' => $n,
 			);
 		}
+		$tags = array();
+		foreach ( get_tags(
+			array(
+				'hide_empty' => false,
+				'number'     => 200,
+			)
+		) as $t ) {
+			$tags[] = array(
+				'id'   => (int) $t->term_id,
+				'name' => $t->name,
+			);
+		}
+		$authors = array();
+		foreach ( get_users(
+			array(
+				'capability' => array( 'edit_posts' ),
+				'number'     => 100,
+				'fields'     => array( 'ID', 'display_name' ),
+			)
+		) as $u ) {
+			$authors[] = array(
+				'id'   => (int) $u->ID,
+				'name' => $u->display_name,
+			);
+		}
+		$templates = array();
+		foreach ( self::templates() as $k => $n ) {
+			$templates[] = array(
+				'id'   => $k,
+				'name' => $n,
+			);
+		}
 		global $wpdb;
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- a count for the dashboard.
 		$off = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM {$wpdb->postmeta} WHERE meta_key = %s AND meta_value = 'off'", self::META ) );
@@ -312,6 +397,9 @@ class VisionForgeX_Rules {
 			'rules'      => self::get(),
 			'postTypes'  => $types,
 			'categories' => $cats,
+			'tags'       => $tags,
+			'authors'    => $authors,
+			'templates'  => $templates,
 			'roles'      => $roles,
 			'members'    => self::membership_plugins(),
 			'woo'        => class_exists( 'WooCommerce' ),

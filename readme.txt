@@ -4,7 +4,7 @@ Tags: ads, ad manager, ads.txt, header bidding, adsense alternative
 Requires at least: 6.3
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.1.0
+Stable tag: 1.2.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -20,8 +20,16 @@ VisionForgeX runs ads for publishers through Google Ad Exchange, Prebid and its 
 * **Go live checklist.** The plugin loads your home page and ads.txt the way a visitor does and tells you what it found: the tag there and not delayed, ads.txt complete, HTTPS. VisionForgeX checks your ads.txt at the same moment, so your account turns green in seconds.
 * **Your ad formats from WordPress.** Banner, native, anchor, interstitial and rewarded ads, refresh, how ads are placed and how many, with a live preview of a page on a phone and a desktop. Changes go live on your site at once.
 * **Ad Tags, a block, a shortcode and a widget.** Put a named ad spot exactly where you want it: the "VisionForgeX ad" block in the editor, `[visionforgex tag="…"]` anywhere shortcodes work, or the widget in a sidebar.
-* **Where ads show.** No ads on chosen post types, categories or addresses; none for logged-in visitors, chosen roles or paying members (MemberPress, Paid Memberships Pro, Restrict Content Pro, WooCommerce Memberships); never on WooCommerce's cart, checkout and account pages; and a "No ads on this page" box on every post.
+* **Where ads show.** No ads on chosen post types, categories, tags, authors, page templates or addresses; none for logged-in visitors, chosen roles or paying members (MemberPress, Paid Memberships Pro, Restrict Content Pro, WooCommerce Memberships); never on WooCommerce's cart, checkout and account pages; and a "No ads on this page" box on every post.
 * **Site tools.** The speed and cache plugins on your site, kept off the tag, with a button to clear each one's cache; other ad code that would fight with VisionForgeX (AdSense, Ezoic, Mediavine, Raptive, Ad Inserter and more) found, with a one-click switch-off and undo.
+* **In-content ads placed by WordPress, with no page jumps.** After paragraph 2, then every 4, at most 3 per post (your numbers), or before headings; never inside tables, lists, quotes or embeds. Each spot keeps the height of its ad in the page, so nothing moves when the ad arrives.
+* **Theme spots and your own spots.** Top of the page, after the title, before and after the content, before the comments, in the footer; or any part of your theme: open your page in the **visual editor**, click where the ad goes, choose before or after it.
+* **Consent bridge.** Your cookie banner's answer decides personalised ads, with no set-up: WP Consent API, Complianz, CookieYes, Cookiebot, Borlabs Cookie and Google consent mode are understood.
+* **Page facts from WordPress.** Categories, tags, author, post type and length go to buyers on a page's very first visit; "Sensitive content" and "Fewer ads on this page" on each post. VisionForgeX hears at once when you publish.
+* **Test ads for administrators.** While you are signed in, your pages show Google's test ads, so you can check placements without clicking real ones.
+* **Instant sync.** A change made on your VisionForgeX dashboard reaches WordPress within a minute, signed, and the page cache is cleared.
+* **For agencies and hosts.** WP-CLI commands (`wp visionforgex status`, `sync`, `check`, `pause`, `adstxt`, `spots` and more), Multisite with a network overview, and staging addresses of your own.
+* **Move over from Ad Inserter.** Its blocks' places become VisionForgeX spots, made switched off for you to check.
 * **Pause all ads** in one click, for emergencies. It works even when VisionForgeX cannot be reached.
 * **Safe by design.** Nothing is fetched while visitors load your pages: the plugin prints your tag from a copy kept in WordPress. A staging or local copy of your site stays quiet. Uninstalling puts everything back.
 
@@ -39,9 +47,11 @@ This plugin connects your site to **VisionForgeX** (https://visionforgex.com), t
 * **When you click Connect**, your browser goes to visionforgex.com with this site's address and name, and the WordPress, PHP and plugin versions. After you sign in and allow the site, the plugin receives a key for this site only.
 * **Twice a day**, the plugin asks VisionForgeX for this site's tag and ads.txt lines.
 * **Once a day and when you run the check**, the plugin sends the result of its site check (tag found, ads.txt complete, HTTPS) and the WordPress, PHP and plugin versions. VisionForgeX then loads your site's /ads.txt to check it.
+* **When you publish a post**, if you switched on "Page facts" (off until you do), its address, title, excerpt and featured image address are sent to VisionForgeX, in the background.
+* **VisionForgeX can send your site its new settings** (when you change them on visionforgex.com, or ask for a site check or a cache clear there): a signed request to your site's REST API (`/wp-json/visionforgex/v1/push`), checked with your site's key and refused otherwise. Nothing is sent back but "done".
 * **On every page of your site** (once VisionForgeX has approved it), the plugin loads your VisionForgeX tag from VisionForgeX's content delivery network and Google's Publisher Tag (securepubads.g.doubleclick.net), which show the ads.
 
-No posts, users, visitors or personal data are sent by the plugin. Your visitors' browsers talk to VisionForgeX and Google when the ads load, as with any ad tag.
+Page facts (categories, tags, the author's public slug, type and length of the page) and your consent banner's answer are written into your pages for the tag to read; the plugin itself sends neither anywhere. No users, visitors or personal data are sent by the plugin. Your visitors' browsers talk to VisionForgeX and Google when the ads load, as with any ad tag.
 
 VisionForgeX: [Terms](https://visionforgex.com/terms) · [Privacy policy](https://visionforgex.com/privacy/). Google: [Terms](https://policies.google.com/terms) · [Privacy policy](https://policies.google.com/privacy).
 
@@ -77,6 +87,22 @@ It tells VisionForgeX the site let go of its key, takes the plugin's lines out o
 
 Yes. Add an Ad Tag in VisionForgeX → Ad Tags, then use the "VisionForgeX ad" block, the shortcode it shows you, or the VisionForgeX ad widget.
 
+= Will in-content ads make my page jump? =
+
+No: each spot keeps the height of its ad in the page from the start ("Keep the ad's space", on by default), so the text below does not move when the ad arrives.
+
+= Does it work with my cookie banner? =
+
+Switch on the consent bridge (Privacy & signals). Visitors who say yes see personalised ads, the others non-personalised ones. A banner that speaks the IAB TCF standard talks to Google directly, and the bridge stands aside.
+
+= Can I manage many sites? =
+
+Yes: WP-CLI (`wp help visionforgex`), Multisite (Network Admin → VisionForgeX lists every site), and your own staging addresses in Settings.
+
+= I use Ad Inserter. Can I move over? =
+
+Yes. Placements shows "Move over from Ad Inserter" when it finds its settings: its blocks' places become VisionForgeX spots, switched off for you to check. Ad Inserter itself is left as it is (or run `wp visionforgex import-adinserter`).
+
 = Will it switch off my other ad plugins by itself? =
 
 No. Site tools lists them, and only switches one off when you click, with an undo.
@@ -87,17 +113,24 @@ On your VisionForgeX dashboard. The plugin's Home screen has an "Open your repor
 
 == Screenshots ==
 
-1. Connect with VisionForgeX in one click.
-2. Home: status, Pause all ads, and the site at a glance.
-3. Go live: the checklist the plugin runs itself.
-4. ads.txt: VisionForgeX's lines next to yours.
-5. Formats, with the live preview.
-6. Ad Tags, the block and the shortcode.
-7. Where ads show.
+1. Home: status, Pause all ads, and the site at a glance.
+2. Formats, with the live preview of a page on a phone and a desktop.
+3. Placements: in-content ads with their space kept, theme spots and your own spots.
+4. The visual editor: click where an ad goes on your own page.
+5. Privacy & signals: the consent bridge, page facts and test ads.
+6. Where ads show: content, visitors, members and WooCommerce.
+7. Go live: the checklist the plugin runs itself.
 8. Site tools: speed plugins and other ad code.
 9. Dark mode, and on a phone.
 
 == Changelog ==
+
+= 1.2.0 =
+* In-content ads placed by WordPress, with the ad's space kept (no layout shift); theme spots; your own spots on any part of the theme, picked in the visual editor on a live preview of your page.
+* Consent bridge (WP Consent API, Complianz, CookieYes, Cookiebot, Borlabs Cookie, Google consent mode), page facts for buyers, "Sensitive content" and "Fewer ads" on each post, test ads for administrators. Each off until switched on.
+* Publish events, and instant sync from VisionForgeX (signed, replays refused).
+* WP-CLI commands, Multisite (network activation, Network Admin overview, one ads.txt per network), staging addresses, import from Ad Inserter.
+* Where ads show: tags, authors and page templates too.
 
 = 1.1.0 =
 * Formats from WordPress with a live preview (banner, native, anchor, interstitial, rewarded, refresh, placement).

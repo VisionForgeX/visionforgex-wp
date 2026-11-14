@@ -1,6 +1,8 @@
 #!/bin/bash
 # A real WordPress for the plugin's tests, in tests/.wp/<port>/ (never committed).
 #   bash tests/setup.sh <WordPress folder> <port> [platform]
+#   MULTISITE=1 bash tests/setup.sh <WordPress folder>   a network (sub-folders) at http://wpnet-vfx.com (port 80; add it to
+#                                    /etc/hosts too), the plugin activated for the whole network
 # WordPress itself: git clone --depth 1 --branch <version> https://github.com/WordPress/WordPress
 # The site answers as http://wpdemo-vfx.com:<port> (add "127.0.0.1 wpdemo-vfx.com www.wpdemo-vfx.com" to /etc/hosts),
 # a made-up domain that does not look like a staging copy. The plugin talks to [platform] (default the platform's
@@ -12,6 +14,8 @@ SRC="$1"; PORT="${2:-8180}"; PLATFORM="${3:-http://127.0.0.1:8097}"
 WPCLI="${WP_CLI:-/tmp/claude-0/wpdl/wp-cli.phar}"
 [ -f "$SRC/wp-includes/version.php" ] || { echo "No WordPress in $SRC"; exit 1; }
 DIR="$PWD/.wp/$PORT"; DB="vfx_wp_$PORT"; URL="http://wpdemo-vfx.com:$PORT"
+# A network cannot have a port in its address (WordPress refuses it): it answers as http://wpnet-vfx.com on port 80.
+if [ "$MULTISITE" = "1" ]; then PORT=80; DIR="$PWD/.wp/net"; DB="vfx_wp_net"; URL="http://wpnet-vfx.com"; fi
 for pid in $(ss -ltnp 2>/dev/null | grep ":$PORT " | grep -o "pid=[0-9]*" | cut -d= -f2 | sort -u); do kill "$pid"; done
 rm -rf "$DIR"; mkdir -p "$DIR"
 cp -a "$SRC/." "$DIR/"; rm -rf "$DIR/.git"
@@ -29,20 +33,26 @@ define('WP_DEBUG', true); define('WP_DEBUG_LOG', __DIR__ . '/debug.log'); define
 define('WP_ENVIRONMENT_TYPE', 'production');
 define('FS_METHOD', 'direct');
 define('DISABLE_WP_CRON', true);
-define('WP_HTTP_BLOCK_EXTERNAL', true); define('WP_ACCESSIBLE_HOSTS', 'wpdemo-vfx.com,www.wpdemo-vfx.com,127.0.0.1'); // WordPress.org is out of reach here
+define('WP_HTTP_BLOCK_EXTERNAL', true); define('WP_ACCESSIBLE_HOSTS', 'wpdemo-vfx.com,www.wpdemo-vfx.com,wpnet-vfx.com,127.0.0.1'); // WordPress.org is out of reach here
 define('AUTOMATIC_UPDATER_DISABLED', true);
 define('VISIONFORGEX_PLATFORM', '$PLATFORM');
+/* That's all, stop editing! Happy publishing. */
 if (!defined('ABSPATH')) define('ABSPATH', __DIR__ . '/');
 require_once ABSPATH . 'wp-settings.php';
 CFG
 WP="php $WPCLI --path=$DIR --allow-root --url=$URL"
-$WP core install --title="Demo Recipes" --admin_user=admin --admin_password=admin-test-pass --admin_email=admin@wpdemo-vfx.com --skip-email >/dev/null
+if [ "$MULTISITE" = "1" ]; then
+  $WP core multisite-install --title="Demo Network" --admin_user=admin --admin_password=admin-test-pass --admin_email=admin@wpdemo-vfx.com --skip-email --skip-config >/dev/null
+  sed -i "s#/\* That's all, stop editing#define('WP_ALLOW_MULTISITE', true); define('MULTISITE', true); define('SUBDOMAIN_INSTALL', false); define('DOMAIN_CURRENT_SITE', 'wpnet-vfx.com'); define('PATH_CURRENT_SITE', '/'); define('SITE_ID_CURRENT_SITE', 1); define('BLOG_ID_CURRENT_SITE', 1);\n/* That's all, stop editing#" "$DIR/wp-config.php"
+else
+  $WP core install --title="Demo Recipes" --admin_user=admin --admin_password=admin-test-pass --admin_email=admin@wpdemo-vfx.com --skip-email >/dev/null
+fi
 $WP rewrite structure '/%postname%/' >/dev/null
 $WP post create --post_type=post --post_status=publish --post_title="Ten weeknight dinners" --post_content="<p>One.</p><p>Two.</p><p>Three.</p>" >/dev/null
 # The plugin, copied the way a site gets it (no tests, no node_modules).
 mkdir -p "$DIR/wp-content/plugins/visionforgex"
 rsync -a --exclude-from=../.distignore ../ "$DIR/wp-content/plugins/visionforgex/"
-$WP plugin activate visionforgex >/dev/null
+if [ "$MULTISITE" = "1" ]; then $WP plugin activate visionforgex --network >/dev/null; else $WP plugin activate visionforgex >/dev/null; fi
 ( cd "$DIR" && setsid nohup env PHP_CLI_SERVER_WORKERS=4 php -S 127.0.0.1:$PORT "$PWD/../../router.php" </dev/null >"$DIR/server.log" 2>&1 & )
 sleep 1
 echo "WordPress $(grep "wp_version =" "$DIR/wp-includes/version.php" | cut -d"'" -f2) at $URL (admin / admin-test-pass), plugin active"

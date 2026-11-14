@@ -4,7 +4,7 @@ A real WordPress, the real plugin, the platform's test server and a browser.
 
 1. The platform's test servers: in `VisionForgeX/visionforgex`, `tests/sync-site.sh` then `tests/start-servers.sh`
    (8097), with MariaDB running.
-2. `127.0.0.1 wpdemo-vfx.com www.wpdemo-vfx.com` in `/etc/hosts` (a made-up domain that does not look like staging).
+2. `127.0.0.1 wpdemo-vfx.com www.wpdemo-vfx.com wpnet-vfx.com` in `/etc/hosts` (a made-up domain that does not look like staging).
 3. WordPress from the GitHub mirror (wordpress.org downloads are not reachable from Claude's workspace):
    `git clone --depth 1 --branch 7.1.4 https://github.com/WordPress/WordPress /tmp/wp-7.1.4`, and WP-CLI
    (`WP_CLI=/path/to/wp-cli.phar`).
@@ -31,9 +31,24 @@ A real WordPress, the real plugin, the platform's test server and a browser.
    Ad Inserter and Site Kit): deactivate after a confirmation and Undo, Site Kit's AdSense setting off and back; 390 px on
    the four new screens; no JavaScript error or PHP notice.
 
-Phase 1 passed on WordPress 7.1.4, 6.8.3 and 6.3; phase 1 and 2 again on 7.1.4 and 6.3, with PHP 8.3 (14 Nov 2026).
+7. `node tests/e2e3.js` (after a fresh `setup.sh`) — 147 checks, phases 3 and 4: in-content ads (placed after the right
+   paragraphs, never in a table or quote, none in short posts or lists, the kept height) with **layout shift measured**
+   (0 with the space kept, above 0.05 without) and the mode warning; theme spots (after the title, after the content on
+   posts only); the visual editor (the page in a frame without the tag or admin bar, links inert, hover, a click gives a
+   selector that finds exactly the element, the spot drawn, saved, in place for a visitor; the link useless to a visitor
+   or with a wrong code); the consent bridge with each banner's real cookie format and consent mode, and a later answer;
+   page facts, the post box, archives; publish events reaching the platform (not drafts, not updates); test ads for
+   administrators only; **instant sync** through the platform's real cron job (`tests/helpers/platform.php`), then a
+   captured signed push replayed, re-signed, altered, late, unsigned and with another key, all refused; staging
+   addresses; tag, author and template rules; the Ad Inserter import in both storage formats, odd stored data included;
+   WP-CLI; 390 px; disconnect. Then **a multisite network** of its own (`MULTISITE=1 tests/setup.sh`, at
+   `http://wpnet-vfx.com` on port 80: add it to `/etc/hosts`; `NO_NETWORK=1` skips it): network activation, a new site's
+   jobs, one ads.txt per network, Network Admin → VisionForgeX, network deactivation and uninstall on every site.
+
+Phase 1 passed on WordPress 7.1.4, 6.8.3 and 6.3; phase 1, 2, 3 and 4 again on 7.1.4 and 6.3, with PHP 8.3 (14 Nov 2026).
 Not proven here: WP Rocket, Perfmatters and SiteGround Optimizer running (WP Rocket's source needs Composer packages
 this workspace cannot fetch; the other two are not public), the real Ad Inserter, Site Kit and membership plugins. Not proven here: PHP 7.4 (not installed; the
 code uses nothing newer and the coding-standards check is set to 7.4+), real hosts and caching plugins, HTTPS sites,
-the "your site is live" moment (needs HTTPS), and WordPress.org's own Plugin Check (not reachable from the workspace;
+the "your site is live" moment (needs HTTPS), real consent banners (their cookies are written by hand, in the formats
+the plugins document), a sub-domain network, and a site whose page cache is not cleared by the plugins it knows, and WordPress.org's own Plugin Check (not reachable from the workspace;
 `phpcs` with the WordPress standard is clean instead).

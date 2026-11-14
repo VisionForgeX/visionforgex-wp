@@ -24,11 +24,22 @@ which ads.txt lines, which features an account has) is made by the VisionForgeX 
 | `includes/class-visionforgex-placements.php` | The block, the `[visionforgex]` shortcode and the spots they print |
 | `includes/class-visionforgex-widget.php` | The VisionForgeX ad widget |
 | `includes/class-visionforgex-tools.php` | Site tools: speed and cache plugins, other ad code (switch-off and undo) |
+| `includes/class-visionforgex-spots.php` | In-content ads (with the ad's space kept), theme spots, selector spots |
+| `includes/class-visionforgex-picker.php` | The visual editor's other half: the site's page with `?vfx_pick=` |
+| `includes/class-visionforgex-signals.php` | Consent bridge, page facts, test ads for administrators, publish events |
+| `includes/class-visionforgex-push.php` | `POST visionforgex/v1/push`: signed pushes from VisionForgeX (sync, clear, check) |
+| `includes/class-visionforgex-import.php` | Import from Ad Inserter |
+| `includes/class-visionforgex-network.php` | Multisite: Network Admin → VisionForgeX, jobs for new sites |
+| `includes/class-visionforgex-cli.php` | `wp visionforgex …` |
 | `src/app/*.jsx` | The dashboard (WordPress's own React, `wp.element`) |
 | `src/block/index.jsx` | The block's editor side |
 | `assets/build/app.js`, `block.js` | Their builds (`npm run build`), committed so the plugin works straight from a zip |
 | `assets/admin.css` | The dashboard's styles, all scoped to `.vfx-app` |
-| `uninstall.php` | Puts everything back |
+| `uninstall.php` | Puts everything back (every site of a network) |
+| `.wordpress-org/` | The listing's icon, banners and screenshots (uploaded to the directory's `assets/`, not in the plugin) |
+| `tools/listing/` | Draws the icon and banners (`render.js`) and takes the screenshots (`screenshots.js`) |
+| `tools/build-zip.sh` | The release zip, as WordPress.org gets it (`dist/visionforgex-<version>.zip`) |
+| `docs/` | Releasing on WordPress.org, the support routine, outreach |
 
 ## Build
 
@@ -45,7 +56,10 @@ See `tests/README.md`: a real WordPress (any version from the GitHub mirror), th
 `POST ?op=disconnect`. Headers `X-VFX-Key`, `X-VFX-Time` (±5 minutes), `X-VFX-Nonce` (once only),
 `X-VFX-Signature` = hex HMAC-SHA256(secret, `METHOD\nPATH?QUERY\nTIME\nNONCE\nsha256(body)`). Since 1.1:
 `POST ?op=settings` `{changes, by}`, `POST ?op=adtag` `{name, format, sizes, by}`, `POST ?op=adtag-delete` `{id, by}`; the
-snapshot carries `settings` (formats, refresh, placement, Ad Tags, the sizes on offer). The platform side is
+snapshot carries `settings` (formats, refresh, placement, Ad Tags, the sizes on offer). Since 1.2: `settings.wordpress`
+`{consent, signals, qa}` (changed through `?op=settings` `{changes: {wordpress: {…}}}`), `POST ?op=published`
+`{url, title, type, excerpt, image}`, and the other way, VisionForgeX → WordPress: `POST <home>/?rest_route=/visionforgex/v1/push`
+`{actions: [sync|clear|health], at, snapshot}`, signed the same way with the same key. The platform side is
 `admin/wp-connector-lib.php` in the private platform repository; change both together.
 
 Support: support@visionforgex.com

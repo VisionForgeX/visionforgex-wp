@@ -9,3 +9,7 @@
 CLAUDE.md
 package-lock.json
 phpcs.xml.dist
+/.wordpress-org
+/tools
+README.md
+/docs

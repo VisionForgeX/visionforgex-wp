@@ -1,5 +1,37 @@
 # Changelog
 
+## 1.2.0 — 14 Nov 2026
+
+Phases 3, 4 and 5 of the plan: placement by WordPress, signals, the tools for many sites, and the listing.
+
+- **In-content ads placed by WordPress** (off until switched on): after paragraph N, then every N, at most N per post,
+  only in posts of at least N paragraphs, or before headings; chosen post types; a banner, native or an Ad Tag. Top-level
+  paragraphs only: never inside a table, list, quote, figure, code, embed or form. Each spot keeps the height of its ad
+  (CSS variables from the sizes it can show, phone and wider), so the page does not move when the ad arrives: layout
+  shift measured at 0 with it, and above 0.05 without, in the tests.
+- **Theme spots** through WordPress's hooks (top, after the title in block themes, before and after the content,
+  before the comments, footer), each on chosen pages. **Your own spots** on any CSS selector, before, after or inside
+  it, placed by a few lines at the end of the page.
+- **The visual editor**: the site's own page inside the dashboard (`?vfx_pick=`, administrators with a valid code only,
+  tag off, links inert); hover outlines, a click gives the element's selector, the spot is drawn at once.
+- **A warning when spots would not load** (VisionForgeX placing ads automatically), with one-click switches.
+- **Privacy & signals**, each off until switched on, the switches kept on VisionForgeX: the **consent bridge**
+  (`window.vfxConsent` from WP Consent API, Complianz, CookieYes, Cookiebot, Borlabs Cookie or Google consent mode,
+  following later answers), **page facts** (`window.vfxPage`: categories, tags, author, type, length; "Sensitive
+  content" and "Fewer ads" from each post's box), **test ads for administrators** (`window.vfxQa`). Tag 1.48.0 reads
+  them (platform).
+- **Publish events**: a post published reaches VisionForgeX in the background (Page targeting, Return Reader, Next Read).
+- **Instant sync**: `POST visionforgex/v1/push`, signed by VisionForgeX with the site's key (time, nonce used once,
+  body hash): sync, clear the caches, run the site check.
+- **WP-CLI** (`wp visionforgex status|connect-url|sync|check|pause|resume|adstxt|spots|import-adinserter|diagnostics|
+  disconnect`), **Multisite** (network activation, new sites get their jobs, Network Admin → VisionForgeX, one ads.txt
+  per network kept by the main site, uninstall on every site), **staging addresses** (Settings, `*.example.com`),
+  **import from Ad Inserter** (both storage formats; spots made switched off; ad code never copied).
+- **Where ads show**: tags, authors and page templates.
+- **Fixed** in testing before release: the four new dashboard routes were not registered; the tag, author and template
+  rules were not saved; a post with no author gave an empty author fact.
+- **Listing**: icon, banners and screenshots (`tools/listing/`), the release zip (`tools/build-zip.sh`).
+
 ## 1.1.0 — 14 Nov 2026
 
 Phase 2 of the plan: the controls.

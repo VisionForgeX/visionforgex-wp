@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>VisionForgeX listing art</title>
+<!-- The WordPress.org icon and banner, drawn here and photographed by render.js (?art=icon|banner). -->
+<style>
+  :root { --a: #8d5dd9; --b: #a78bfa; --ink: #120a22; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: transparent; font-family: Inter, "Inter Display", system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+  .art { display: none; position: relative; overflow: hidden; }
+  body[data-art="icon"] .icon, body[data-art="banner"] .banner { display: block; }
+
+  /* ---------- icon: 128 x 128 CSS px */
+  .icon { width: 128px; height: 128px; background:
+      radial-gradient(120% 90% at 85% 0%, #c4b1fd 0%, rgba(196,177,253,0) 55%),
+      radial-gradient(90% 90% at 0% 100%, #4c22a8 0%, rgba(76,34,168,0) 70%),
+      linear-gradient(135deg, #8d5dd9 0%, #7a48d1 55%, #5b2fb8 100%); }
+  .icon::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(255,255,255,.18), rgba(255,255,255,0) 42%); }
+  .icon svg { position: absolute; left: 24px; top: 24px; width: 80px; height: 80px; filter: drop-shadow(0 3px 6px rgba(40,10,90,.45)); }
+
+  /* ---------- banner: 772 x 250 CSS px */
+  .banner { width: 772px; height: 250px; color: #fff; background:
+      radial-gradient(60% 120% at 78% 40%, rgba(141,93,217,.55) 0%, rgba(141,93,217,0) 70%),
+      radial-gradient(40% 80% at 0% 100%, rgba(91,47,184,.6) 0%, rgba(91,47,184,0) 70%),
+      linear-gradient(120deg, #170d2c 0%, #120a22 60%, #1b0f35 100%); }
+  .grid { position: absolute; inset: 0; background-image: linear-gradient(rgba(255,255,255,.045) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.045) 1px, transparent 1px); background-size: 26px 26px; mask-image: radial-gradient(70% 90% at 70% 50%, #000 0%, transparent 80%); }
+  .brand { position: absolute; left: 40px; top: 44px; width: 360px; }
+  .mark { display: flex; align-items: center; gap: 12px; }
+  .mark svg { width: 40px; height: 40px; }
+  .word { font-size: 31px; font-weight: 650; letter-spacing: -0.02em; }
+  .word span { background: linear-gradient(90deg, #a78bfa, #c9b8ff); -webkit-background-clip: text; color: transparent; }
+  .tagline { margin-top: 16px; font-size: 19px; line-height: 1.25; font-weight: 600; letter-spacing: -0.01em; color: #efe9ff; }
+  .tagline em { font-style: normal; color: #c9b8ff; }
+  .pills { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 18px; }
+  .pill { display: inline-flex; align-items: center; gap: 6px; font-size: 10.5px; font-weight: 600; padding: 5px 10px; border-radius: 999px; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.14); color: #e7defc; }
+  .pill i { width: 6px; height: 6px; border-radius: 50%; background: #34d399; box-shadow: 0 0 0 3px rgba(52,211,153,.18); }
+  .pill b { color: #a78bfa; font-weight: 800; }
+
+  .page { position: absolute; right: 44px; top: 30px; width: 300px; height: 236px; border-radius: 14px; background: #fff; box-shadow: 0 30px 60px -20px rgba(0,0,0,.6), 0 0 0 1px rgba(255,255,255,.08); overflow: hidden; transform: rotate(-2deg); }
+  .bar { height: 22px; background: #f3f0fa; display: flex; align-items: center; gap: 5px; padding: 0 10px; }
+  .bar u { width: 7px; height: 7px; border-radius: 50%; background: #d9d2ea; }
+  .bar s { margin-left: 8px; height: 9px; flex: 1; border-radius: 5px; background: #fff; }
+  .body { padding: 14px 18px; }
+  .t { height: 11px; width: 72%; border-radius: 4px; background: #2a1d45; }
+  .p { height: 6px; border-radius: 3px; background: #e6e1f0; margin-top: 7px; }
+  .ad { margin: 11px 0; height: 56px; border-radius: 9px; border: 1.5px dashed #8d5dd9; background: repeating-linear-gradient(45deg, rgba(141,93,217,.12) 0 8px, rgba(141,93,217,.04) 8px 16px); display: grid; place-items: center; color: #6d3fc4; font-size: 10px; font-weight: 700; letter-spacing: .02em; }
+  .chip { position: absolute; display: inline-flex; align-items: center; gap: 6px; padding: 7px 11px; border-radius: 11px; background: rgba(22,14,40,.86); border: 1px solid rgba(167,139,250,.35); box-shadow: 0 14px 30px -10px rgba(0,0,0,.6); font-size: 11px; font-weight: 650; backdrop-filter: blur(6px); }
+  .chip.live { right: 300px; top: 150px; }
+  .chip.live i { width: 7px; height: 7px; border-radius: 50%; background: #34d399; box-shadow: 0 0 0 3px rgba(52,211,153,.2); }
+  .chip.txt { right: 22px; bottom: 20px; font-family: ui-monospace, "SF Mono", Menlo, monospace; font-weight: 600; font-size: 10px; color: #d6caff; }
+  .chip.txt b { color: #34d399; font-family: Inter, sans-serif; }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute"><defs>
+  <linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8d5dd9"/><stop offset="1" stop-color="#c4b1fd"/></linearGradient>
+  <symbol id="x" viewBox="0 0 40 40"><rect x="16.4" y="1.6" width="7.2" height="36.8" rx="3.2" transform="rotate(-45 20 20)"/><path d="M20,0.8 L26.4,11.2 L23.2,11.2 L23.2,39.2 L16.8,39.2 L16.8,11.2 L13.6,11.2 Z" transform="rotate(45 20 20)"/></symbol>
+</defs></svg>
+
+<div class="art icon"><svg fill="#fff"><use href="#x"/></svg></div>
+
+<div class="art banner">
+  <div class="grid"></div>
+  <div class="brand">
+    <div class="mark"><svg fill="url(#g)"><use href="#x"/></svg><div class="word">Vision<span>ForgeX</span></div></div>
+    <p class="tagline">Ad management &amp; yield<br><em>for WordPress</em></p>
+    <div class="pills">
+      <span class="pill"><i></i>One-click connect</span>
+      <span class="pill"><b>✓</b>ads.txt kept right</span>
+      <span class="pill"><b>↕</b>No page jumps</span>
+    </div>
+  </div>
+  <div class="page">
+    <div class="bar"><u></u><u></u><u></u><s></s></div>
+    <div class="body">
+      <div class="t"></div>
+      <div class="p" style="width:96%"></div><div class="p" style="width:88%"></div><div class="p" style="width:92%"></div>
+      <div class="ad">AD · SPACE KEPT</div>
+      <div class="p" style="width:90%"></div><div class="p" style="width:84%"></div><div class="p" style="width:95%"></div><div class="p" style="width:70%"></div>
+    </div>
+  </div>
+  <div class="chip live"><i></i>Live on your site</div>
+  <div class="chip txt">/ads.txt&nbsp; <b>complete</b></div>
+</div>
+<script>document.body.dataset.art = new URLSearchParams(location.search).get('art') || 'banner';</script>
+</body>
+</html>
