@@ -1,0 +1,14 @@
+{
+  "name": "visionforgex-wp",
+  "version": "1.0.0",
+  "private": true,
+  "description": "VisionForgeX – Ad Management & Yield: the WordPress plugin's dashboard source and build.",
+  "license": "GPL-2.0-or-later",
+  "scripts": {
+    "build": "esbuild src/app/index.jsx --bundle --minify-whitespace --minify-syntax --format=iife --target=es2018 --jsx-factory=wp.element.createElement --jsx-fragment=wp.element.Fragment --legal-comments=none --outfile=assets/build/app.js",
+    "watch": "npm run build -- --watch"
+  },
+  "devDependencies": {
+    "esbuild": "0.24.2"
+  }
+}

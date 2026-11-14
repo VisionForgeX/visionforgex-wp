@@ -1,0 +1,11 @@
+# Not shipped in the WordPress.org package (the source in src/ is, as the directory rules ask)
+/.git
+/.github
+/node_modules
+/tests
+/dist
+.gitignore
+.distignore
+CLAUDE.md
+package-lock.json
+phpcs.xml.dist

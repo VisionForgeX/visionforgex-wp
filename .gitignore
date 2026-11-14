@@ -1,0 +1,8 @@
+node_modules/
+/tests/.wp/
+/tests/.run/
+/tests/shots/
+/tests/logs/
+/dist/
+*.zip
+.DS_Store
