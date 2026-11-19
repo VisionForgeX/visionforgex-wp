@@ -7,8 +7,13 @@
  *           the dashboard, and those of the Ads.txt Manager plugin when it is there) and ours.
  *   file    A real ads.txt file is there: our lines are written into it between two marker comments, once, and kept
  *           up to date; the rest of the file is never touched. Uninstalling takes our block out.
- *   manual  Neither works (WordPress lives in a sub-folder, or the file cannot be written): the dashboard shows the
- *           lines to add by hand.
+ *   manual  Neither works (WordPress answers in a sub-folder of the address, the site's root folder cannot be told, or
+ *           the file cannot be written): the dashboard shows the lines to add by hand.
+ *
+ * Where the file lives: ads.txt must be at the root of the site's address, which is not always WordPress's own folder
+ * (ABSPATH). When WordPress's files are in a sub-folder of the root (Settings → General, two different addresses),
+ * the root is the folder above them. A site can name the folder itself with VISIONFORGEX_ADSTXT_DIR in wp-config.php
+ * (or the visionforgex_adstxt_dir filter); when it cannot be told, nothing is written and the lines are shown instead.
  *
  * @package VisionForgeX
  */
@@ -28,9 +33,54 @@ class VisionForgeX_Adstxt {
 		add_action( 'init', array( __CLASS__, 'maybe_serve' ), 0 );
 	}
 
-	/** @return string The real file's path (at the web root, which is WordPress's own folder when it is at the root). */
+	/** @return string The real file's path, at the root of the site's address; '' when that folder cannot be told. */
 	public static function path() {
-		return trailingslashit( ABSPATH ) . 'ads.txt';
+		$dir = self::root_dir();
+		return '' === $dir ? '' : $dir . '/ads.txt';
+	}
+
+	/** @return string The folder at the root of the site's address (no trailing slash), or '' when it cannot be told. */
+	public static function root_dir() {
+		$dir = defined( 'VISIONFORGEX_ADSTXT_DIR' ) ? (string) VISIONFORGEX_ADSTXT_DIR : self::detect_root();
+		/**
+		 * The folder at the root of the site's address, where ads.txt lives ('' to keep the plugin from writing it).
+		 *
+		 * @param string $dir Set by VISIONFORGEX_ADSTXT_DIR, or worked out from WordPress's own folder and addresses.
+		 */
+		$dir = (string) apply_filters( 'visionforgex_adstxt_dir', $dir );
+		if ( '' === $dir ) {
+			return '';
+		}
+		$dir = untrailingslashit( wp_normalize_path( $dir ) );
+		return is_dir( $dir ) ? $dir : '';
+	}
+
+	/**
+	 * The root folder worked out from WordPress's own folder (ABSPATH) and its two addresses: the same folder when the
+	 * site's address and WordPress's address are the same, the folder above when WordPress's files are in a sub-folder.
+	 *
+	 * @return string '' when the addresses do not say.
+	 */
+	public static function detect_root() {
+		$abs  = untrailingslashit( wp_normalize_path( ABSPATH ) );
+		$home = wp_parse_url( home_url( '/' ) );
+		$site = wp_parse_url( site_url( '/' ) );
+		if ( empty( $home['host'] ) || empty( $site['host'] ) || strtolower( $home['host'] ) !== strtolower( $site['host'] ) ) {
+			return '';
+		}
+		$hp = trim( isset( $home['path'] ) ? (string) $home['path'] : '', '/' );
+		$sp = trim( isset( $site['path'] ) ? (string) $site['path'] : '', '/' );
+		if ( $hp === $sp ) {
+			return $abs;
+		}
+		if ( '' !== $hp && 0 !== strpos( $sp . '/', $hp . '/' ) ) {
+			return '';
+		}
+		$rel = '/' . trim( substr( $sp, strlen( $hp ) ), '/' );
+		if ( '/' === $rel || strlen( $abs ) <= strlen( $rel ) || strtolower( substr( $abs, -strlen( $rel ) ) ) !== strtolower( $rel ) ) {
+			return '';
+		}
+		return substr( $abs, 0, -strlen( $rel ) );
 	}
 
 	/** @return bool WordPress answers at the root of its domain (ads.txt must be at /ads.txt). */
@@ -66,8 +116,8 @@ class VisionForgeX_Adstxt {
 	 */
 	public static function status() {
 		$path     = self::path();
-		$exists   = file_exists( $path );
-		$writable = $exists ? wp_is_writable( $path ) : wp_is_writable( dirname( $path ) );
+		$exists   = '' !== $path && file_exists( $path );
+		$writable = '' !== $path && ( $exists ? wp_is_writable( $path ) : wp_is_writable( dirname( $path ) ) );
 		$direct   = self::filesystem() !== null;
 		$mode     = VisionForgeX_Store::settings()['adstxtMode'];
 		$reason   = '';
@@ -78,6 +128,9 @@ class VisionForgeX_Adstxt {
 		} elseif ( ! self::at_root() ) {
 			$out    = 'manual';
 			$reason = __( 'WordPress runs in a sub-folder, so it cannot answer for /ads.txt at the root of your domain. Add the lines to the ads.txt file at the root by hand.', 'visionforgex' );
+		} elseif ( '' === $path ) {
+			$out    = 'manual';
+			$reason = __( 'The plugin cannot tell which folder is the root of your site\'s address, so it does not write ads.txt. Add the lines below to the ads.txt file at the root by hand, or name the folder with VISIONFORGEX_ADSTXT_DIR in wp-config.php.', 'visionforgex' );
 		} elseif ( $exists || 'file' === $mode ) {
 			if ( $writable && $direct ) {
 				$out = 'file';
@@ -254,7 +307,7 @@ class VisionForgeX_Adstxt {
 	public static function remove_from_file() {
 		$path = self::path();
 		$fs   = self::filesystem();
-		if ( ! $fs || ! file_exists( $path ) ) {
+		if ( ! $fs || '' === $path || ! file_exists( $path ) ) {
 			return;
 		}
 		$current = (string) $fs->get_contents( $path );

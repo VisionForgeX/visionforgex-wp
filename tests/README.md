@@ -19,7 +19,7 @@ A real WordPress, the real plugin, the platform's test server and a browser.
    390 px phone; Disconnect (the platform lets go, our block out of their file); a stale link and Cancel; uninstall.
    Screenshots in `tests/shots/`. It puts the platform's files back when it ends.
 
-6. `node tests/e2e2.js` (after a fresh `setup.sh`) — 58 checks, phase 2: Formats changed on VisionForgeX through the
+6. `node tests/e2e2.js` (after a fresh `setup.sh`) — 59 checks, phase 2: Formats changed on VisionForgeX through the
    plugin (the save bar, the preview with sizes, the anchor, sticky and the rewarded prompt; the platform's file changed
    only where asked; logged by name; refresh under 30 s, a format without its ad unit and a size not on the list refused;
    settings it does not offer ignored); Ad Tags (made, listed with the shortcode, removed); the shortcode, block and
@@ -31,7 +31,7 @@ A real WordPress, the real plugin, the platform's test server and a browser.
    Ad Inserter and Site Kit): deactivate after a confirmation and Undo, Site Kit's AdSense setting off and back; 390 px on
    the four new screens; no JavaScript error or PHP notice.
 
-7. `node tests/e2e3.js` (after a fresh `setup.sh`) — 147 checks, phases 3 and 4: in-content ads (placed after the right
+7. `node tests/e2e3.js` (after a fresh `setup.sh`) — 154 checks, phases 3 and 4 (and 1.2.1's review points: the page facts, kept-space CSS and picker added through `wp_add_inline_script` / `wp_add_inline_style`, the page facts still before the tag with their attributes; where ads.txt is written: WordPress at the root, its files in a sub-folder of the address, a sub-folder it cannot tell, a folder named by the site, one that does not exist): in-content ads (placed after the right
    paragraphs, never in a table or quote, none in short posts or lists, the kept height) with **layout shift measured**
    (0 with the space kept, above 0.05 without) and the mode warning; theme spots (after the title, after the content on
    posts only); the visual editor (the page in a frame without the tag or admin bar, links inert, hover, a click gives a
@@ -45,7 +45,7 @@ A real WordPress, the real plugin, the platform's test server and a browser.
    `http://wpnet-vfx.com` on port 80: add it to `/etc/hosts`; `NO_NETWORK=1` skips it): network activation, a new site's
    jobs, one ads.txt per network, Network Admin → VisionForgeX, network deactivation and uninstall on every site.
 
-Phase 1 passed on WordPress 7.1.4, 6.8.3 and 6.3; phase 1, 2, 3 and 4 again on 7.1.4 and 6.3, with PHP 8.3 (14 Nov 2026).
+Phase 1 passed on WordPress 7.1.4, 6.8.3 and 6.3; phase 1, 2, 3 and 4 again on 7.1.4 and 6.3, with PHP 8.3 (14 Nov 2026). 1.2.1 (19 Nov 2026): e2e 64, e2e2 59, e2e3 154 on 7.1.4, and e2e3 154 on 6.3.5; `phpcs` clean.
 Not proven here: WP Rocket, Perfmatters and SiteGround Optimizer running (WP Rocket's source needs Composer packages
 this workspace cannot fetch; the other two are not public), the real Ad Inserter, Site Kit and membership plugins. Not proven here: PHP 7.4 (not installed; the
 code uses nothing newer and the coding-standards check is set to 7.4+), real hosts and caching plugins, HTTPS sites,

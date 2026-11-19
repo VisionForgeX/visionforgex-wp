@@ -1,5 +1,21 @@
 # Changelog
 
+## 1.2.1 — 19 Nov 2026
+
+The WordPress.org review's three points.
+
+- **The description** said nothing is fetched while visitors load pages, and also that visitors' browsers load the tag:
+  now it says the server makes no remote call on a page load, and the browser loads the tag from VisionForgeX's CDN
+  and Google's ad scripts (readme.txt, and the dashboard's "Safe by design" line).
+- **ads.txt at the root of the site's address**, not WordPress's own folder (`ABSPATH`): when WordPress's files are in
+  a sub-folder (two addresses in Settings → General), the folder above them; `VISIONFORGEX_ADSTXT_DIR` in wp-config.php
+  (or the `visionforgex_adstxt_dir` filter) names it; when it cannot be told, nothing is written and the dashboard shows
+  the lines to add by hand.
+- **No `<style>` or `<script>` printed by the plugin any more**: the page facts and consent bridge, the kept-space CSS,
+  the selector spots, the visual editor's picker and the Network Admin page all go through `wp_register_*` +
+  `wp_add_inline_script` / `wp_add_inline_style` (the page facts still come before the tag; the speed-plugin attributes
+  through `wp_inline_script_attributes`).
+
 ## 1.2.0 — 14 Nov 2026
 
 Phases 3, 4 and 5 of the plan: placement by WordPress, signals, the tools for many sites, and the listing.

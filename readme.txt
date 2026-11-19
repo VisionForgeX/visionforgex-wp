@@ -4,7 +4,7 @@ Tags: ads, ad manager, ads.txt, header bidding, adsense alternative
 Requires at least: 6.3
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.2.0
+Stable tag: 1.2.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -31,7 +31,7 @@ VisionForgeX runs ads for publishers through Google Ad Exchange, Prebid and its 
 * **For agencies and hosts.** WP-CLI commands (`wp visionforgex status`, `sync`, `check`, `pause`, `adstxt`, `spots` and more), Multisite with a network overview, and staging addresses of your own.
 * **Move over from Ad Inserter.** Its blocks' places become VisionForgeX spots, made switched off for you to check.
 * **Pause all ads** in one click, for emergencies. It works even when VisionForgeX cannot be reached.
-* **Safe by design.** Nothing is fetched while visitors load your pages: the plugin prints your tag from a copy kept in WordPress. A staging or local copy of your site stays quiet. Uninstalling puts everything back.
+* **Safe by design.** Your WordPress server never calls VisionForgeX while visitors load your pages: the plugin prints your tag's address from a copy kept in WordPress (refreshed twice a day, and at once when you change something). Your visitors' browsers then load the tag from VisionForgeX's content delivery network and Google's ad scripts, which show the ads, as with any ad tag (see External services). A staging or local copy of your site stays quiet. Uninstalling puts everything back.
 
 There is no reporting in the plugin: your earnings and reports stay on your VisionForgeX dashboard, one click away.
 
@@ -70,6 +70,10 @@ Yes. You can create one when you click Connect. New sites are reviewed before ad
 = Will it remove my AdSense or other lines from ads.txt? =
 
 No. Your lines stay exactly as they are. The plugin only adds and updates its own lines, in their own marked block.
+
+= My WordPress files are in a sub-folder. Where does ads.txt go? =
+
+ads.txt must be at the root of your site's address. When WordPress's own files are in a sub-folder of that root (two different addresses in Settings → General), the plugin writes to the folder above them. If your host arranges folders differently, name the folder in wp-config.php, for example `define( 'VISIONFORGEX_ADSTXT_DIR', '/home/you/public_html' );`. When the plugin cannot tell, it writes nothing and the dashboard shows the lines to add yourself.
 
 = What happens if VisionForgeX is down? =
 
@@ -124,6 +128,11 @@ On your VisionForgeX dashboard. The plugin's Home screen has an "Open your repor
 9. Dark mode, and on a phone.
 
 == Changelog ==
+
+= 1.2.1 =
+* The description says plainly what is loaded where: your server makes no call to VisionForgeX on a visitor's page load; visitors' browsers load the tag and Google's ad scripts.
+* ads.txt is written at the root of your site's address even when WordPress's files are in a sub-folder; the folder can be named with VISIONFORGEX_ADSTXT_DIR in wp-config.php, and when it cannot be told the lines are shown to add by hand.
+* The plugin's own CSS and JavaScript go through WordPress (wp_add_inline_style, wp_add_inline_script) instead of being printed directly.
 
 = 1.2.0 =
 * In-content ads placed by WordPress, with the ad's space kept (no layout shift); theme spots; your own spots on any part of the theme, picked in the visual editor on a live preview of your page.

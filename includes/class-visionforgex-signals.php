@@ -11,7 +11,8 @@
  *   Test ads        window.vfxQa = true, only for the site's administrators: Google's test ads for them alone.
  *   Publish events  when a post is published, VisionForgeX hears it at once (Page targeting, Return Reader, Next Read).
  *
- * All printed in the head before the tag, from WordPress's own data: no remote call on a visitor's page load.
+ * All printed in the head before the tag (added with wp_add_inline_script), from WordPress's own data: the server makes no
+ * remote call on a visitor's page load.
  *
  * @package VisionForgeX
  */
@@ -27,7 +28,7 @@ class VisionForgeX_Signals {
 
 	/** Hooks. */
 	public static function init() {
-		add_action( 'wp_head', array( __CLASS__, 'head' ), 1 );
+		add_action( 'wp_enqueue_scripts', array( __CLASS__, 'head' ), 0 );
 		add_action( 'transition_post_status', array( __CLASS__, 'transition' ), 10, 3 );
 		add_action( 'visionforgex_published', array( __CLASS__, 'send_published' ) );
 		add_action( 'init', array( __CLASS__, 'register_meta' ) );
@@ -124,7 +125,7 @@ class VisionForgeX_Signals {
 		return (array) apply_filters( 'visionforgex_page_facts', $out );
 	}
 
-	/** The head: before the tag. */
+	/** The head, before the tag (queued just before it, so WordPress prints it first). */
 	public static function head() {
 		if ( ! VisionForgeX_Frontend::should_serve() ) {
 			return;
@@ -144,7 +145,7 @@ class VisionForgeX_Signals {
 			$js .= 'window.vfxQa=true;';
 		}
 		if ( '' !== $js ) {
-			echo '<script data-cfasync="false" data-no-optimize="1" data-no-defer="1" data-noptimize="1" id="visionforgex-page-js">' . $js . "</script>\n"; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- our own script; data through wp_json_encode.
+			VisionForgeX_Frontend::inline_script( 'visionforgex-page', $js );
 		}
 	}
 

@@ -1,6 +1,6 @@
 <?php
 /**
- * The site's own VisionForgeX tag on every page, printed from the stored copy (no remote call on a visitor's page
+ * The site's own VisionForgeX tag on every page, printed from the stored copy (the server makes no remote call on a visitor's page
  * load), with the attributes that keep speed plugins from delaying, combining or minifying it.
  *
  * @package VisionForgeX
@@ -19,6 +19,7 @@ class VisionForgeX_Frontend {
 	public static function init() {
 		add_action( 'wp_enqueue_scripts', array( __CLASS__, 'enqueue' ), 1 );
 		add_filter( 'script_loader_tag', array( __CLASS__, 'script_tag' ), 20, 3 );
+		add_filter( 'wp_inline_script_attributes', array( __CLASS__, 'inline_attributes' ) );
 		add_action( 'wp_head', array( __CLASS__, 'preconnect' ), 1 );
 
 		// The best-known speed plugins: keep the tag out of delaying, deferring and combining through each plugin's own
@@ -102,6 +103,48 @@ class VisionForgeX_Frontend {
 				)
 			);
 		}
+	}
+
+	/**
+	 * A few lines of our own JavaScript, added the WordPress way: a handle with no file, enqueued, the code attached
+	 * with wp_add_inline_script(). WordPress prints it as <script id="{$handle}-js-after">.
+	 *
+	 * @param string $handle    Our handle (visionforgex-…).
+	 * @param string $js        The code.
+	 * @param bool   $in_footer In the footer instead of the head.
+	 */
+	public static function inline_script( $handle, $js, $in_footer = false ) {
+		wp_register_script( $handle, false, array(), VISIONFORGEX_VERSION, array( 'in_footer' => $in_footer ) );
+		wp_enqueue_script( $handle );
+		wp_add_inline_script( $handle, $js );
+	}
+
+	/**
+	 * A few lines of our own CSS, added the WordPress way (printed as <style id="{$handle}-inline-css">).
+	 *
+	 * @param string $handle Our handle (visionforgex-…).
+	 * @param string $css    The CSS.
+	 */
+	public static function inline_style( $handle, $css ) {
+		wp_register_style( $handle, false, array(), VISIONFORGEX_VERSION );
+		wp_enqueue_style( $handle );
+		wp_add_inline_style( $handle, $css );
+	}
+
+	/**
+	 * Our inline scripts carry the attributes that keep speed plugins from delaying or combining them, like the tag.
+	 *
+	 * @param array $attributes The inline script's attributes.
+	 * @return array
+	 */
+	public static function inline_attributes( $attributes ) {
+		if ( isset( $attributes['id'] ) && in_array( $attributes['id'], array( 'visionforgex-page-js-after', 'visionforgex-spots-js-after' ), true ) ) {
+			$attributes['data-cfasync']     = 'false';
+			$attributes['data-no-optimize'] = '1';
+			$attributes['data-no-defer']    = '1';
+			$attributes['data-noptimize']   = '1';
+		}
+		return $attributes;
 	}
 
 	/** Opens the connection to the tag's host early. */

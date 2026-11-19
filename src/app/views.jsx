@@ -48,7 +48,7 @@ export function Welcome({ s, act, busy, came }) {
 		['tag', __('Your tag on every page', 'visionforgex'), __('No theme editing. It survives theme changes and updates.', 'visionforgex')],
 		['file', __('ads.txt kept right', 'visionforgex'), __('Every line VisionForgeX needs, next to yours, never removing anyone else’s.', 'visionforgex')],
 		['rocket', __('Speed plugins handled', 'visionforgex'), __('The tag is kept out of WP Rocket, LiteSpeed and others’ delay lists.', 'visionforgex')],
-		['shield', __('Safe by design', 'visionforgex'), __('Nothing is fetched while visitors load your pages. Pause all ads in one click.', 'visionforgex')],
+		['shield', __('Safe by design', 'visionforgex'), __('Your server never calls VisionForgeX while pages load: visitors\' browsers load the tag. Pause all ads in one click.', 'visionforgex')],
 	];
 	return (
 		<div className="vfx-welcome">

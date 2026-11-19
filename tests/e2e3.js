@@ -151,7 +151,7 @@ const SHORT = WP + '/ten-weeknight-dinners/';
 	await page.waitForSelector('.vfx-top');
 	check('connected and live', (await page.locator('.vfx-status').innerText()).includes('Live'));
 	const plain = await get(fresh(LONG));
-	check('untouched site: no spot, no page script, no kept-space CSS', hasTag(plain.body) && !plain.body.includes('visionforgex-spot') && !plain.body.includes('visionforgex-page-js') && !plain.body.includes('id="visionforgex-spots"'));
+	check('untouched site: no spot, no page script, no kept-space CSS', hasTag(plain.body) && !plain.body.includes('visionforgex-spot') && !plain.body.includes('visionforgex-page-js') && !plain.body.includes('visionforgex-spots-inline-css'));
 	check('untouched site: nothing waits to be pushed', !state(site.id).push);
 
 	console.log('1. In-content ads, placed by WordPress');
@@ -183,7 +183,8 @@ const SHORT = WP + '/ten-weeknight-dinners/';
 	check('a post shorter than 4 paragraphs gets none', !shortHtml.includes('visionforgex-spot--content'));
 	const homeHtml = (await get(fresh(WP + '/'))).body;
 	check('the home page list gets none', !homeHtml.includes('visionforgex-spot--content'));
-	check('the kept-space CSS is in the head', (await get(fresh(LONG))).body.includes('<style id="visionforgex-spots">'));
+	const keptHtml = (await get(fresh(LONG))).body;
+	check('the kept-space CSS is in the head, added through WordPress (wp_add_inline_style), not printed by the plugin', /<style id=["']visionforgex-spots-inline-css["'][^>]*>[^<]*visionforgex-spot--kept/.test(keptHtml) && keptHtml.indexOf('visionforgex-spots-inline-css') < keptHtml.indexOf('</head>'));
 
 	// Layout shift: an ad of 300x250 with its label arrives in every spot after the page has settled.
 	const measure = () =>
@@ -282,7 +283,7 @@ const SHORT = WP + '/ten-weeknight-dinners/';
 	check('a visitor: the spot is in place before the title', live.placed && live.slot, JSON.stringify(live));
 	check('not on the home page (posts only)', !(await get(fresh(WP + '/'))).body.includes('visionforgex-spots-js'));
 	const reopen = await page.evaluate(() => wp.apiFetch({ path: '/visionforgex/v1/state' }).then((s) => (s.state || s).placements.pick));
-	const noNonce = await visit(WP + '/slow-cooker-guide/?vfx_pick=' + reopen, () => ({ picker: !!document.getElementById('visionforgex-picker-js'), tag: !!document.querySelector('script[data-vfx-plugin]') }));
+	const noNonce = await visit(WP + '/slow-cooker-guide/?vfx_pick=' + reopen, () => ({ picker: !!document.getElementById('visionforgex-picker-js-after'), tag: !!document.querySelector('script[data-vfx-plugin]') }));
 	check('the editor link does nothing for a visitor (no picker, the tag as usual)', !noNonce.picker && noNonce.tag, JSON.stringify(noNonce));
 	const badNonce = await page.evaluate((u) => fetch(u).then((r) => r.text()), LONG + '?vfx_pick=nope');
 	check('nor for an administrator with a wrong code', !badNonce.includes('visionforgex-picker-js'));
@@ -347,6 +348,10 @@ const SHORT = WP + '/ten-weeknight-dinners/';
 	await page.click('[data-vfx-flag="signals"] .vfx-switch');
 	await page.waitForSelector('[data-vfx-flag="signals"].is-on', { timeout: 20000 });
 	const facts = await visit(LONG, () => window.vfxPage);
+	const factsHtml = (await get(fresh(LONG))).body;
+	const factsTag = (factsHtml.match(/<script[^>]*id="visionforgex-page-js-after"[^>]*>/) || [''])[0];
+	check('the page facts script goes through WordPress (wp_add_inline_script) and comes before the tag', factsTag !== '' && factsHtml.indexOf(factsTag) < factsHtml.search(/<script[^>]*data-vfx-plugin/) && factsHtml.indexOf(factsTag) < factsHtml.indexOf('</head>'), factsTag);
+	check('…with the attributes that keep speed plugins off it, as before', /data-cfasync="false"/.test(factsTag) && /data-no-optimize="1"/.test(factsTag) && /data-no-defer="1"/.test(factsTag) && /data-noptimize="1"/.test(factsTag), factsTag);
 	check('the post says its category, tag, author, type and length', facts && facts.cat.join() === 'dinners' && facts.tag.join() === 'quick' && facts.author === 'admin' && facts.type === 'post' && facts.len === 'short', JSON.stringify(facts));
 	check('not sensitive, not fewer, unless set', facts && !facts.sens && !facts.fewer);
 	wp('post', 'meta', 'update', longId, '_visionforgex_sensitive', '1');
@@ -488,6 +493,20 @@ const SHORT = WP + '/ten-weeknight-dinners/';
 	await page.reload();
 	await tab('Placements', '[data-vfx-incontent]');
 	check('no Ad Inserter settings: no import card', !(await page.locator('[data-vfx-import]').count()));
+
+	console.log('11b. Where ads.txt is written (WordPress.org review, 1.2.1)');
+	const adsRoot = (filters) => JSON.parse(php(filters + ' echo wp_json_encode( array( "root" => VisionForgeX_Adstxt::root_dir(), "path" => VisionForgeX_Adstxt::path(), "abs" => untrailingslashit( wp_normalize_path( ABSPATH ) ), "st" => VisionForgeX_Adstxt::status() ) );'));
+	const r0 = adsRoot('');
+	check('WordPress at the root of its address: ads.txt in its own folder', r0.root === r0.abs && r0.path === r0.abs + '/ads.txt', JSON.stringify(r0));
+	const r1 = adsRoot('add_filter( "pre_option_siteurl", function () { return untrailingslashit( home_url() ) . "/" . basename( ABSPATH ); } );');
+	check('WordPress\'s files in a sub-folder of the address (two addresses): the folder above them, not ABSPATH', r1.root === r1.abs.replace(/\/[^/]+$/, '') && r1.path === r1.root + '/ads.txt', JSON.stringify(r1));
+	const r2 = adsRoot('add_filter( "pre_option_siteurl", function () { return untrailingslashit( home_url() ) . "/somewhere-else"; } );');
+	check('…a sub-folder that is not WordPress\'s own folder: cannot be told, nothing written, the lines shown to add by hand', r2.root === '' && r2.path === '' && r2.st.mode === 'manual' && /VISIONFORGEX_ADSTXT_DIR/.test(r2.st.reason), JSON.stringify(r2.st));
+	const custom = fs.mkdtempSync('/tmp/claude-0/vfx-root-');
+	const r3 = adsRoot('add_filter( "visionforgex_adstxt_dir", function () { return "' + custom + '"; } );');
+	check('a folder named by the site (VISIONFORGEX_ADSTXT_DIR or the filter) is used', r3.root === custom && r3.path === custom + '/ads.txt');
+	const r4 = adsRoot('add_filter( "visionforgex_adstxt_dir", function () { return "/no/such/folder"; } );');
+	check('…one that does not exist is not: manual', r4.root === '' && r4.st.mode === 'manual');
 
 	console.log('12. WP-CLI');
 	const help = wp('help', 'visionforgex');

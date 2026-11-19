@@ -41,7 +41,22 @@ class VisionForgeX_Network {
 
 	/** Network Admin → VisionForgeX. */
 	public static function menu() {
-		add_menu_page( __( 'VisionForgeX', 'visionforgex' ), __( 'VisionForgeX', 'visionforgex' ), 'manage_network_options', 'visionforgex-network', array( __CLASS__, 'render' ), VisionForgeX_Admin::menu_icon(), 58 );
+		$hook = add_menu_page( __( 'VisionForgeX', 'visionforgex' ), __( 'VisionForgeX', 'visionforgex' ), 'manage_network_options', 'visionforgex-network', array( __CLASS__, 'render' ), VisionForgeX_Admin::menu_icon(), 58 );
+		add_action(
+			'admin_enqueue_scripts',
+			function ( $current ) use ( $hook ) {
+				if ( $current === $hook ) {
+					self::styles();
+				}
+			}
+		);
+	}
+
+	/** The page's look, added the WordPress way (only on this page). */
+	public static function styles() {
+		wp_register_style( 'visionforgex-network', false, array(), VISIONFORGEX_VERSION );
+		wp_enqueue_style( 'visionforgex-network' );
+		wp_add_inline_style( 'visionforgex-network', '.vfx-net h1{display:flex;align-items:center;gap:10px}.vfx-net table{border-collapse:separate;border-spacing:0;width:100%;max-width:1100px;background:#fff;border:1px solid #e7e2f0;border-radius:14px;overflow:hidden}.vfx-net th,.vfx-net td{text-align:left;padding:12px 14px;border-top:1px solid #f0ecf6}.vfx-net th{background:#faf9fc;border-top:0;font-weight:600}.vfx-net .s{display:inline-block;padding:2px 10px;border-radius:999px;font-weight:600;font-size:12px;border:1px solid #d6cbec;color:#6b647a}.vfx-net .s-live{border-color:#17803f;color:#17803f}.vfx-net .s-paused,.vfx-net .s-in-review{border-color:#a8590a;color:#a8590a}.vfx-net .lede{color:#6b647a;max-width:760px}' );
 	}
 
 	/** @return array Every site of the network with its VisionForgeX state. */
@@ -74,7 +89,7 @@ class VisionForgeX_Network {
 		}
 		$rows = self::rows();
 		$on   = count( array_filter( $rows, fn( $r ) => $r['connected'] ) );
-		echo '<div class="wrap vfx-net"><style>.vfx-net h1{display:flex;align-items:center;gap:10px}.vfx-net table{border-collapse:separate;border-spacing:0;width:100%;max-width:1100px;background:#fff;border:1px solid #e7e2f0;border-radius:14px;overflow:hidden}.vfx-net th,.vfx-net td{text-align:left;padding:12px 14px;border-top:1px solid #f0ecf6}.vfx-net th{background:#faf9fc;border-top:0;font-weight:600}.vfx-net .s{display:inline-block;padding:2px 10px;border-radius:999px;font-weight:600;font-size:12px;border:1px solid #d6cbec;color:#6b647a}.vfx-net .s-live{border-color:#17803f;color:#17803f}.vfx-net .s-paused,.vfx-net .s-in-review{border-color:#a8590a;color:#a8590a}.vfx-net .lede{color:#6b647a;max-width:760px}</style>';
+		echo '<div class="wrap vfx-net">';
 		echo '<h1><img src="' . esc_url( VISIONFORGEX_URL . 'assets/logo.svg' ) . '" width="28" height="28" alt=""> ' . esc_html__( 'VisionForgeX on this network', 'visionforgex' ) . '</h1>';
 		/* translators: 1: connected sites, 2: all sites */
 		echo '<p class="lede">' . esc_html( sprintf( __( '%1$d of %2$d sites are connected. Each site connects on its own, from its own dashboard, to its own VisionForgeX site; its ads.txt lines go into the network\'s file from the main site.', 'visionforgex' ), $on, count( $rows ) ) ) . '</p>';

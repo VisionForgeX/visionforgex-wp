@@ -40,7 +40,7 @@ class VisionForgeX_Picker {
 		self::$on = true;
 		add_filter( 'visionforgex_should_serve', '__return_false', 100 );
 		add_filter( 'show_admin_bar', '__return_false' );
-		add_action( 'wp_footer', array( __CLASS__, 'script' ), 100 );
+		add_action( 'wp_enqueue_scripts', array( __CLASS__, 'script' ), 100 );
 		nocache_headers();
 	}
 
@@ -72,7 +72,7 @@ class VisionForgeX_Picker {
 			. 'document.addEventListener("submit",function(ev){ev.preventDefault();},true);'
 			. 'window.addEventListener("message",function(ev){if(ev.origin!==origin||!ev.data||ev.data.type!=="vfx-preview")return;mark(ev.data.spot,true);});'
 			. 'parent.postMessage({type:"vfx-pick-ready",title:document.title},origin);})(' . wp_json_encode( $spots ) . ');';
-		echo '<style id="visionforgex-picker-css">' . $css . "</style>\n"; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- our own CSS.
-		echo '<script id="visionforgex-picker-js">' . $js . "</script>\n"; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- our own script; data through wp_json_encode.
+		VisionForgeX_Frontend::inline_style( 'visionforgex-picker', $css );
+		VisionForgeX_Frontend::inline_script( 'visionforgex-picker', $js, true );
 	}
 }

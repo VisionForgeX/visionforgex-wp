@@ -41,9 +41,9 @@ class VisionForgeX_Spots {
 		add_action( 'wp_body_open', array( __CLASS__, 'hook_top' ), 20 );
 		add_action( 'comment_form_before', array( __CLASS__, 'hook_comments' ) );
 		add_action( 'wp_footer', array( __CLASS__, 'hook_footer' ), 5 );
-		add_action( 'wp_footer', array( __CLASS__, 'selector_script' ), 50 );
+		add_action( 'wp_enqueue_scripts', array( __CLASS__, 'selector_script' ), 20 );
 		add_filter( 'render_block_core/post-title', array( __CLASS__, 'after_title' ), 10, 2 );
-		add_action( 'wp_head', array( __CLASS__, 'reserve_css' ), 3 );
+		add_action( 'wp_enqueue_scripts', array( __CLASS__, 'reserve_css' ), 20 );
 	}
 
 	/* ------------------------------------------------------------------ settings */
@@ -248,7 +248,7 @@ class VisionForgeX_Spots {
 		if ( ! $ic['on'] || ! $ic['reserve'] || ! VisionForgeX_Frontend::should_serve() ) {
 			return;
 		}
-		echo "<style id=\"visionforgex-spots\">.visionforgex-spot--kept{min-height:calc(var(--vfx-h) + 24px);margin:24px auto;text-align:center;box-sizing:border-box}@media (min-width:768px){.visionforgex-spot--kept{min-height:calc(var(--vfx-hw) + 24px)}}</style>\n";
+		VisionForgeX_Frontend::inline_style( 'visionforgex-spots', '.visionforgex-spot--kept{min-height:calc(var(--vfx-h) + 24px);margin:24px auto;text-align:center;box-sizing:border-box}@media (min-width:768px){.visionforgex-spot--kept{min-height:calc(var(--vfx-hw) + 24px)}}' );
 	}
 
 	/**
@@ -389,7 +389,7 @@ class VisionForgeX_Spots {
 		return $html . $extra;
 	}
 
-	/** The selector spots: put in place by a few lines at the end of the page; the tag picks them up as they appear. */
+	/** The selector spots: put in place by a few lines at the end of the page (in the footer); the tag picks them up as they appear. */
 	public static function selector_script() {
 		if ( ! VisionForgeX_Frontend::should_serve() ) {
 			return;
@@ -415,7 +415,7 @@ class VisionForgeX_Spots {
 		$js = '(function(L){var M={before:"beforebegin",after:"afterend",prepend:"afterbegin",append:"beforeend"};'
 			. 'for(var i=0;i<L.length;i++){try{var e=document.querySelector(L[i].s);if(e&&!e.closest("[data-adx-slot]"))e.insertAdjacentHTML(M[L[i].p]||"afterend",L[i].h);}catch(x){}}})('
 			. wp_json_encode( $list ) . ');';
-		echo '<script data-cfasync="false" data-no-optimize="1" data-no-defer="1" data-noptimize="1" id="visionforgex-spots-js">' . $js . "</script>\n"; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- JSON built by wp_json_encode, spots built with esc_attr.
+		VisionForgeX_Frontend::inline_script( 'visionforgex-spots', $js, true );
 	}
 
 	/** @return array What the dashboard needs. */
