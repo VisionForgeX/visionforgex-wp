@@ -76,6 +76,13 @@ Approved on 20 Nov 2026. Claude sends `visionforgex-wordpress-org-1.2.2.zip`: th
    `visionforgex` (case-sensitive), the SVN password from step 1. Wait for "Completed".
 7. A few minutes later https://wordpress.org/plugins/visionforgex/ shows the plugin. Search can take up to 72 hours.
 
+## A later release on Windows with TortoiseSVN (from 1.2.3)
+
+Claude sends `visionforgex-wordpress-org-<version>.zip` with `trunk` and `tags/<version>` only (the page images do not
+change). In the `visionforgex-svn` folder: right-click → **SVN Update** first; copy the zip's two folders in and choose
+**Replace**; right-click → TortoiseSVN → **Add…** (only the new tag folder is listed) → OK; right-click → **SVN Commit…**
+→ message `<version>` → OK. Sites see the update in Dashboard → Updates within a few hours.
+
 ## Each later release
 
 Claude builds the new zip and updates `readme.txt` (with the new "Stable tag"). You then: `svn update`, replace the

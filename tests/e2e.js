@@ -25,6 +25,17 @@ fs.mkdirSync(SHOTS, { recursive: true });
 
 let pass = 0;
 let fail = 0;
+// Every icon in the middle of its badge, every switch knob in the middle of its track, to the pixel (20 Nov 2026: a
+// rule for the text beside a badge, ".vfx-step span", also caught the badge, a span too, and dropped its centring).
+async function centred(page, boxSel, innerSel) {
+	return page.evaluate(([b, i]) => [...document.querySelectorAll(b)].map((el) => {
+		const inner = el.querySelector(i);
+		if (!inner) return 'no ' + i + ' in ' + b;
+		const o = el.getBoundingClientRect(), n = inner.getBoundingClientRect();
+		const dx = Math.abs(o.left + o.width / 2 - (n.left + n.width / 2)), dy = Math.abs(o.top + o.height / 2 - (n.top + n.height / 2));
+		return dx <= 1 && dy <= 1 ? '' : b + ' off by ' + dx.toFixed(1) + ', ' + dy.toFixed(1);
+	}).filter(Boolean), [boxSel, innerSel]);
+}
 function check(name, ok, extra) {
 	if (ok) {
 		pass++;
@@ -97,6 +108,8 @@ if (fs.existsSync(realAds)) fs.unlinkSync(realAds);
 	check('what is sent is listed', await page.locator('.vfx-disclose-body').isVisible());
 	await sleep(700);
 	await page.screenshot({ path: path.join(SHOTS, '1-welcome.png') });
+	let off = await centred(page, '.vfx-pill-icon', 'svg');
+	check('Welcome: each point\'s icon in the middle of its badge', off.length === 0 && (await page.locator('.vfx-pill-icon').count()) >= 3, off.join(' | '));
 	check('wp-admin outside the app untouched (the admin menu keeps its own colours)', (await page.evaluate(() => getComputedStyle(document.querySelector('#adminmenuback')).backgroundColor)) !== 'rgba(0, 0, 0, 0)');
 
 	console.log('2. Connect: sign in on VisionForgeX, add and allow');
@@ -126,6 +139,8 @@ if (fs.existsSync(realAds)) fs.unlinkSync(realAds);
 	check('the first site check ran by itself (Go live)', (await page.locator('.vfx-tab.is-on').innerText()).includes('Go live') && (await page.locator('.vfx-step--ok').count()) >= 2);
 	await sleep(600);
 	await page.screenshot({ path: path.join(SHOTS, '3-golive-review.png'), fullPage: true });
+	off = await centred(page, '.vfx-step-dot', 'svg');
+	check('Go live: every step\'s tick or icon in the middle of its round badge', off.length === 0 && (await page.locator('.vfx-step-dot').count()) >= 4, off.join(' | '));
 
 	console.log('3. ads.txt while in review');
 	let ads = await get(WP + '/ads.txt');
@@ -174,6 +189,8 @@ if (fs.existsSync(realAds)) fs.unlinkSync(realAds);
 	await page.click('.vfx-tab:has-text("Home")');
 	await sleep(700);
 	await page.screenshot({ path: path.join(SHOTS, '5-home.png'), fullPage: true });
+	const knob = await page.evaluate(() => { const t = document.querySelector('.vfx-pause .vfx-switch'), k = t && t.querySelector('.vfx-switch-knob'); if (!k) return 99; const a = t.getBoundingClientRect(), b = k.getBoundingClientRect(); return Math.abs(a.top + a.height / 2 - (b.top + b.height / 2)); });
+	check('Home: Pause all ads\' knob in the middle of its track', knob <= 1, knob);
 	check('Home: the reports link goes to the platform (no reporting in the plugin)', (await page.locator('a:has-text("Open your reports")').getAttribute('href')).startsWith(VFX + '/publisher/reports?site=' + site.id));
 	check('Home: no money anywhere', !/\$\s?\d|revenue|eCPM|impressions/i.test(await page.locator('.vfx-view').innerText()));
 	check('Home: features not on the account named in one line, not a wall of chips', (await page.locator('.vfx-feature').count()) === 0 && (await page.locator('.vfx-view').innerText()).includes('Also on VisionForgeX: Bad ads'));

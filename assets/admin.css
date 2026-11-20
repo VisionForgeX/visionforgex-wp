@@ -199,7 +199,7 @@
 	padding: 18px 18px; border-radius: 14px; background: var(--vfx-surface-2); border: 1px solid var(--vfx-border);
 }
 .vfx-pause b { display: block; font-size: 15px; }
-.vfx-pause span { display: block; font-size: 12.5px; color: var(--vfx-text-lo); margin-top: 2px; }
+.vfx-pause > div > span { display: block; font-size: 12.5px; color: var(--vfx-text-lo); margin-top: 2px; }
 
 /* tiles */
 .vfx-tiles { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
@@ -302,7 +302,7 @@
 .vfx-pill:hover { transform: translateY(-2px); border-color: var(--vfx-border-hi); }
 .vfx-pill-icon { display: grid; place-items: center; flex: 0 0 36px; height: 36px; border-radius: 11px; background: var(--vfx-grad); color: #fff; }
 .vfx-pill b { display: block; font-size: 14px; }
-.vfx-pill span { display: block; font-size: 12.5px; color: var(--vfx-text-lo); margin-top: 2px; }
+.vfx-pill > div > span { display: block; font-size: 12.5px; color: var(--vfx-text-lo); margin-top: 2px; }
 .vfx-disclose { display: inline-flex; align-items: center; gap: 7px; margin-top: 24px; padding: 6px 10px; border: 0; border-radius: 8px; background: none; color: var(--vfx-text-lo); font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; }
 .vfx-disclose:hover { color: var(--vfx-gold); }
 .vfx-disclose-body { max-width: 560px; margin: 8px auto 0; padding: 14px 18px; border-radius: 12px; background: var(--vfx-surface); border: 1px solid var(--vfx-border); text-align: left; font-size: 13px; color: var(--vfx-text-lo); animation: vfxRise 0.3s var(--vfx-ease-out) both; }
@@ -322,7 +322,7 @@
 .vfx-steps { list-style: none; display: grid; gap: 10px; }
 .vfx-step { position: relative; display: flex; gap: 14px; align-items: flex-start; padding: 16px 18px; border-radius: var(--vfx-radius); background: var(--vfx-surface); border: 1px solid var(--vfx-border); box-shadow: var(--vfx-shadow); }
 .vfx-step b { display: block; font-size: 14.5px; }
-.vfx-step span { display: block; font-size: 13px; color: var(--vfx-text-lo); margin-top: 2px; }
+.vfx-step > div > span { display: block; font-size: 13px; color: var(--vfx-text-lo); margin-top: 2px; }
 .vfx-step > div { flex: 1; min-width: 0; }
 .vfx-step-dot { display: grid; place-items: center; flex: 0 0 32px; height: 32px; border-radius: 50%; background: var(--vfx-surface-2); color: var(--vfx-text-lo); border: 1px solid var(--vfx-border-hi); transition: background 0.4s var(--vfx-ease-out), transform 0.5s var(--vfx-ease-spring); }
 .vfx-step--ok .vfx-step-dot { background: var(--vfx-ok); border-color: var(--vfx-ok); color: #fff; animation: vfxPop 0.5s var(--vfx-ease-spring) both; }
@@ -339,7 +339,7 @@
 /* ------------------------------------------------------------------ ads.txt */
 .vfx-mode { display: flex; gap: 12px; align-items: baseline; }
 .vfx-mode b { display: block; font-size: 15px; }
-.vfx-mode span { display: block; color: var(--vfx-text-lo); margin-top: 2px; }
+.vfx-mode > div > span { display: block; color: var(--vfx-text-lo); margin-top: 2px; }
 .vfx-code { max-height: 260px; overflow: auto; padding: 14px 16px !important; border-radius: 11px; background: var(--vfx-surface-2) !important; border: 1px solid var(--vfx-border); font-size: 12.5px; line-height: 1.7; color: var(--vfx-text-hi); white-space: pre; }
 .vfx-label { display: block; margin-bottom: 8px; color: var(--vfx-text-lo); font-size: 13px; }
 .vfx-app .vfx-textarea { width: 100%; padding: 12px 14px; border-radius: 11px; border: 1px solid var(--vfx-border-hi); background: var(--vfx-surface); color: var(--vfx-text-hi); font: 12.5px/1.7 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; resize: vertical; box-shadow: none; transition: border-color 0.2s, box-shadow 0.2s; }
@@ -506,7 +506,7 @@
 .vfx-master { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 20px 22px; border-radius: 18px; border: 1px solid var(--vfx-border); background: var(--vfx-surface); box-shadow: var(--vfx-shadow-hi); animation: vfxRise .45s var(--vfx-ease-out) both; transition: border-color .3s; }
 .vfx-master.is-on { border-color: var(--vfx-gold); }
 .vfx-master b { display: block; font-size: 17px; letter-spacing: -.01em; }
-.vfx-master span { display: block; color: var(--vfx-text-lo); margin-top: 3px; }
+.vfx-master > div > span { display: block; color: var(--vfx-text-lo); margin-top: 3px; }
 .vfx-master .vfx-switch.is-on, .vfx-format .vfx-switch.is-on, .vfx-line .vfx-switch.is-on, .vfx-toolrow .vfx-switch.is-on { background: var(--vfx-gold); border-color: var(--vfx-gold); }
 
 /* ------------------------------------------------------------------ site tools */

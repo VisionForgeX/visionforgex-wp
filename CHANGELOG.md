@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.2.3 — 20 Nov 2026
+
+- **Icons in the middle of their badges.** The rule for the line of text beside a badge (`.vfx-step span`, `.vfx-pill span`)
+  also caught the badge itself, a span too, and turned off its centring: the tick and the icons sat 7 to 9 px high on the Go live
+  checklist and the Welcome page. The same kind of rule moved the Pause all ads and "Use these rules" switch knobs 2 px down.
+  Each rule now reaches only its own line of text (`.vfx-step > div > span` and the like). `tests/e2e.js` measures the
+  icons and the knob to the pixel (it fails on 1.2.2: 7 to 9 px, and 2 px).
+
 ## 1.2.2 — 20 Nov 2026
 
 The first release on WordPress.org (approved 20 Nov 2026), with the review's last note.
