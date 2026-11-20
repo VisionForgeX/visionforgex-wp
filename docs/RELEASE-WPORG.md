@@ -10,7 +10,7 @@ The plugin's name on WordPress.org: **VisionForgeX – Ad Management & Yield**, 
 
 | File | What it is |
 |---|---|
-| `dist/visionforgex-1.2.0.zip` | The plugin, exactly as WordPress.org gets it. Made by `bash tools/build-zip.sh`. |
+| `dist/visionforgex-<version>.zip` | The plugin, exactly as WordPress.org gets it. Made by `bash tools/build-zip.sh`. |
 | `.wordpress-org/icon-128x128.png`, `icon-256x256.png`, `icon.svg` | The plugin's icon in the directory. |
 | `.wordpress-org/banner-772x250.png`, `banner-1544x500.png` | The banner at the top of the plugin's page. |
 | `.wordpress-org/screenshot-1.png` … `screenshot-9.png` | The screenshots, in the order of the captions in `readme.txt`. |
@@ -59,6 +59,22 @@ Then copy the files in:
        svn commit -m "VisionForgeX – Ad Management & Yield 1.2.0" --username <your WordPress.org username>
 
    It asks for the SVN password from above. A few minutes later the plugin's page shows the new version.
+
+## The first upload, on Windows with TortoiseSVN (1.2.2, 20 Nov 2026)
+
+Approved on 20 Nov 2026. Claude sends `visionforgex-wordpress-org-1.2.2.zip`: the three folders already laid out
+(`trunk` = the plugin, `tags/1.2.2` = the same files as the release, `assets` = banner, icon and screenshots).
+
+1. SVN password: wordpress.org, signed in as `visionforgex` → Edit Profile → **Account & Security** → SVN password →
+   Generate. Keep it private.
+2. Install TortoiseSVN (tortoisesvn.net, free). It adds SVN to the right-click menu.
+3. Make an empty folder (e.g. `visionforgex-svn`), right-click inside it → **SVN Checkout** → URL of repository
+   `https://plugins.svn.wordpress.org/visionforgex` → OK. Three empty folders appear: assets, tags, trunk.
+4. Unzip Claude's zip into that folder; when Windows asks, replace the folders.
+5. Right-click inside the folder → **TortoiseSVN → Add…** → tick everything (Select all) → OK.
+6. Right-click → **SVN Commit…** → message `VisionForgeX – Ad Management & Yield 1.2.2` → OK. Username
+   `visionforgex` (case-sensitive), the SVN password from step 1. Wait for "Completed".
+7. A few minutes later https://wordpress.org/plugins/visionforgex/ shows the plugin. Search can take up to 72 hours.
 
 ## Each later release
 

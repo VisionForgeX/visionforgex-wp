@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       VisionForgeX – Ad Management & Yield
  * Description:       Connects your site to VisionForgeX in one click: your ad tag and ads.txt lines go on the site by themselves, speed plugins are kept off the tag, and your ad formats, placements, consent and where ads show are managed from WordPress.
- * Version:           1.2.1
+ * Version:           1.2.2
  * Requires at least: 6.3
  * Requires PHP:      7.4
  * Author:            VisionForgeX
@@ -17,7 +17,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'VISIONFORGEX_VERSION', '1.2.1' );
+define( 'VISIONFORGEX_VERSION', '1.2.2' );
 define( 'VISIONFORGEX_FILE', __FILE__ );
 define( 'VISIONFORGEX_DIR', plugin_dir_path( __FILE__ ) );
 define( 'VISIONFORGEX_URL', plugin_dir_url( __FILE__ ) );

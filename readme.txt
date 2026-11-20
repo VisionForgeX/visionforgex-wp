@@ -4,7 +4,7 @@ Tags: ads, ad manager, ads.txt, header bidding, adsense alternative
 Requires at least: 6.3
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.2.1
+Stable tag: 1.2.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -128,6 +128,9 @@ On your VisionForgeX dashboard. The plugin's Home screen has an "Open your repor
 9. Dark mode, and on a phone.
 
 == Changelog ==
+
+= 1.2.2 =
+* ads.txt: whether WordPress may write the file is checked on the folder the file goes in, not on WordPress's own folder (the two can differ when WordPress's files are in a sub-folder).
 
 = 1.2.1 =
 * The description says plainly what is loaded where: your server makes no call to VisionForgeX on a visitor's page load; visitors' browsers load the tag and Google's ad scripts.

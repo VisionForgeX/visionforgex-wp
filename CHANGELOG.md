@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.2.2 — 20 Nov 2026
+
+The first release on WordPress.org (approved 20 Nov 2026), with the review's last note.
+
+- **ads.txt**: `get_filesystem_method()` and `WP_Filesystem()` are given the folder ads.txt goes in (the root of the
+  site's address) as their context, not `ABSPATH`: when WordPress's files are in a sub-folder the two folders can have
+  different owners and permissions. With no such folder known, the plugin does not write (as before: the lines are
+  shown to add by hand).
+
 ## 1.2.1 — 19 Nov 2026
 
 The WordPress.org review's three points.

@@ -45,7 +45,7 @@ A real WordPress, the real plugin, the platform's test server and a browser.
    `http://wpnet-vfx.com` on port 80: add it to `/etc/hosts`; `NO_NETWORK=1` skips it): network activation, a new site's
    jobs, one ads.txt per network, Network Admin → VisionForgeX, network deactivation and uninstall on every site.
 
-Phase 1 passed on WordPress 7.1.4, 6.8.3 and 6.3; phase 1, 2, 3 and 4 again on 7.1.4 and 6.3, with PHP 8.3 (14 Nov 2026). 1.2.1 (19 Nov 2026): e2e 64, e2e2 59, e2e3 154 on 7.1.4, and e2e3 154 on 6.3.5; `phpcs` clean.
+Phase 1 passed on WordPress 7.1.4, 6.8.3 and 6.3; phase 1, 2, 3 and 4 again on 7.1.4 and 6.3, with PHP 8.3 (14 Nov 2026). 1.2.1 (19 Nov 2026): e2e 64, e2e2 59, e2e3 154 on 7.1.4, and e2e3 154 on 6.3.5; `phpcs` clean. 1.2.2 (20 Nov 2026): e2e 64 and e2e3 154 on 7.1.4, e2e3 154 on 6.3.5 (each after a fresh `setup.sh`: run on a site another run used, e2e3 fails 2 multisite checks); `phpcs --ignore='*/dist/*,*/tests/*,*/node_modules/*'` clean (without the ignore it counts dist/'s copy as duplicate classes).
 Not proven here: WP Rocket, Perfmatters and SiteGround Optimizer running (WP Rocket's source needs Composer packages
 this workspace cannot fetch; the other two are not public), the real Ad Inserter, Site Kit and membership plugins. Not proven here: PHP 7.4 (not installed; the
 code uses nothing newer and the coding-standards check is set to 7.4+), real hosts and caching plugins, HTTPS sites,

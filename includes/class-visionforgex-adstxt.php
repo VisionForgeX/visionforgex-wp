@@ -323,14 +323,24 @@ class VisionForgeX_Adstxt {
 		delete_option( 'visionforgex_adstxt_written' );
 	}
 
-	/** @return WP_Filesystem_Base|null The file system, only when WordPress can write directly (never asks for FTP details). */
+	/**
+	 * The file system for the folder ads.txt lives in, only when WordPress can write there directly (never asks for FTP
+	 * details). That folder, not WordPress's own, is what is checked: when WordPress's files are in a sub-folder, the
+	 * two can have different owners and permissions.
+	 *
+	 * @return WP_Filesystem_Base|null
+	 */
 	public static function filesystem() {
+		$dir = self::root_dir();
+		if ( '' === $dir ) {
+			return null;
+		}
 		require_once ABSPATH . 'wp-admin/includes/file.php';
-		if ( 'direct' !== get_filesystem_method( array(), ABSPATH ) ) {
+		if ( 'direct' !== get_filesystem_method( array(), $dir ) ) {
 			return null;
 		}
 		global $wp_filesystem;
-		if ( ! $wp_filesystem && ! WP_Filesystem() ) {
+		if ( ! $wp_filesystem && ! WP_Filesystem( false, $dir ) ) {
 			return null;
 		}
 		return $wp_filesystem;
